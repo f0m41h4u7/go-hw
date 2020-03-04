@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/beevik/ntp"
 	"log"
 	"time"
+
+	"github.com/beevik/ntp"
 )
 
 func main() {
