@@ -10,6 +10,10 @@ import (
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(input string) (string, error) {
+	if input == "" {
+		return "", nil
+	}
+
 	str := []rune(input)
 	var lastChar = str[0]
 
@@ -23,23 +27,21 @@ func Unpack(input string) (string, error) {
 	var qtyBuilder strings.Builder // Counts quantity of symbols
 
 	for _, currChar := range str[1:] {
-		// Symbols cannot repeat
-		if currChar == lastChar {
-			return "", ErrInvalidString
-		}
-
-		if unicode.IsDigit(currChar) {
+		switch {
+		case unicode.IsDigit(currChar):
 			if !unicode.IsDigit(lastChar) {
 				tmp = lastChar
 			}
 			qtyBuilder.WriteRune(currChar)
 			lastChar = currChar
-		} else if unicode.IsDigit(lastChar) {
+		case currChar == lastChar:
+			return "", ErrInvalidString
+		case unicode.IsDigit(lastChar):
 			qty, _ := strconv.Atoi(qtyBuilder.String())
 			resBuilder.WriteString(strings.Repeat(string(tmp), qty))
 			lastChar = currChar
 			qtyBuilder.Reset()
-		} else {
+		default:
 			resBuilder.WriteRune(lastChar)
 			lastChar = currChar
 			qtyBuilder.Reset()
