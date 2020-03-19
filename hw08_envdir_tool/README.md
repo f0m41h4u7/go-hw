@@ -50,6 +50,9 @@ $ FOO=123 BAR=value command arg1 arg2
 - https://www.unix.com/man-page/debian/8/envdir/
 - `os.Args`
 - `ioutil.ReadDir`
+<<<<<<< HEAD
 - `bufio.NewReader`
+=======
+>>>>>>> bf5ee9ee38937742dcb7c4e88670f88fda04a79e
 - `bytes.Replace`, `strings.TrimRight`
 - `exec.Command`

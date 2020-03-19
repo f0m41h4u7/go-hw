@@ -5,6 +5,13 @@
 *.dll
 *.so
 *.dylib
+<<<<<<< HEAD
+=======
+go-cp
+go-envdir
+go-validate
+go-telnet
+>>>>>>> bf5ee9ee38937742dcb7c4e88670f88fda04a79e
 
 # Test binary, build with `go test -c`
 *.test

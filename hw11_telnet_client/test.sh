@@ -32,5 +32,8 @@ expected_telnet_err='...Connected to localhost:4242
 fileEquals /tmp/telnet.err "${expected_telnet_err}"
 
 rm -f go-telnet
+<<<<<<< HEAD
 
+=======
+>>>>>>> bf5ee9ee38937742dcb7c4e88670f88fda04a79e
 echo "PASS"
