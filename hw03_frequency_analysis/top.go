@@ -20,10 +20,11 @@ func Top10(text string) []string {
 	// Count frequences of words
 	freqs := make(map[string]uint)
 	for _, w := range words {
-		matched, _ := regexp.MatchString(`^[[[:punct:]]|\s|\n]+$`, w)
+		matched, _ := regexp.Compile(`^[[[:punct:]]|\s|\n]+$`, w)
 		if (!matched) && (w != "") {
 			w = strings.ToLower(w)
-			if _, ok := freqs[w]; ok {
+			_, ok := freqs[w]
+			if ok {
 				freqs[w]++
 			} else {
 				freqs[w] = 1
