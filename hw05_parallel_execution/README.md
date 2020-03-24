@@ -20,7 +20,4 @@
 ### Подсказки
 - https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem
 - `sync.WaitGroup`
-<<<<<<< HEAD
-=======
 - `go test -v -race -count=100 .`
->>>>>>> bf5ee9ee38937742dcb7c4e88670f88fda04a79e

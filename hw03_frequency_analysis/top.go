@@ -1,10 +1,13 @@
 package hw03_frequency_analysis //nolint:golint,stylecheck
 
 import (
+	"bufio"
 	"regexp"
 	"sort"
 	"strings"
 )
+
+var validWord = regexp.MustCompile(`([A-Za-zА-Яа-я]+[^\s,.)(:;'"!?+=/\\]*)`)
 
 func Top10(text string) []string {
 	// If string is empty, return 0
@@ -12,48 +15,48 @@ func Top10(text string) []string {
 		return nil
 	}
 
-	// Separation regex
-	sep := regexp.MustCompile(`[[:blank:]\,\.\?\!\~\/\(\)\*\+\;\:\\\n']+`)
 	// Split string to words
-	words := sep.Split(text, -1)
-
-	// Count frequences of words
-	freqs := make(map[string]uint)
-	punct := regexp.MustCompile(`^[[[:punct:]]|\s|\n]+$`)
-	for _, w := range words {
-		if (!punct.MatchString(w)) && (w != "") {
-			w = strings.ToLower(w)
-			_, ok := freqs[w]
-			if ok {
-				freqs[w]++
-			} else {
-				freqs[w] = 1
-			}
+	scanner := bufio.NewScanner(strings.NewReader(text))
+	scanner.Split(bufio.ScanWords)
+	var words []string
+	for scanner.Scan() {
+		valid := validWord.FindStringSubmatch(scanner.Text())
+		if len(valid) != 0 {
+			words = append(words, valid[0])
 		}
 	}
 
-	// Convert map with frequences into slice of structs
-	type mapStruct struct {
-		Key   string
-		Value uint
+	// Count frequences of words
+	freqs := make(map[string]int)
+	for _, w := range words {
+		w = strings.ToLower(w)
+		freqs[w]++
 	}
-	top := make([]mapStruct, len(words))
-	for key, val := range freqs {
-		top = append(top, mapStruct{key, val})
+
+	// Convert map with frequences into slice of structs
+	type wordStat struct {
+		word string
+		freq int
+	}
+
+	top := make([]wordStat, len(words))
+	for word, freq := range freqs {
+		top = append(top, wordStat{word, freq})
 	}
 
 	// Sort words by frequences
 	sort.Slice(top, func(i, j int) bool {
-		if top[i].Value == top[j].Value {
-			return top[i].Key < top[j].Key
+		if top[i].freq == top[j].freq {
+			return top[i].word < top[j].word
 		}
-		return top[i].Value > top[j].Value
+		return top[i].freq > top[j].freq
 	})
 
 	// Pick first 10
 	res := make([]string, 10)
 	for i := range res {
-		res[i] = top[i].Key
+		res[i] = top[i].word
 	}
+
 	return res
 }
