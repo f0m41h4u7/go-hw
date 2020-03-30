@@ -57,18 +57,15 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 
 	// If key existed, return true
 	element, exists := cache.items[key]
-	if exists {
-		element.Value = cacheItem{
-			key:   key,
-			value: value,
-		}
-		cache.queue.MoveToFront(element)
-		return true
-	}
-
-	newElement := cacheItem{
+	newValue := cacheItem{
 		key:   key,
 		value: value,
+	}
+
+	if exists {
+		element.Value = newValue
+		cache.queue.MoveToFront(element)
+		return true
 	}
 
 	// Delete last element if capacity is overflow
@@ -77,7 +74,7 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 		cache.queue.Remove(lastElement)
 		delete(cache.items, lastElement.Value.(cacheItem).key)
 	}
-	cache.queue.PushFront(newElement)
+	cache.queue.PushFront(newValue)
 	cache.items[key] = cache.queue.Front()
 	return false
 }

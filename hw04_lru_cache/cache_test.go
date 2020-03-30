@@ -62,10 +62,10 @@ func TestCache(t *testing.T) {
 		_, ok := c.Get("a")
 		require.False(t, ok)
 
-		_, ok = c.Get("a")
+		_, ok = c.Get("b")
 		require.False(t, ok)
 
-		_, ok = c.Get("a")
+		_, ok = c.Get("c")
 		require.False(t, ok)
 	})
 
@@ -80,6 +80,13 @@ func TestCache(t *testing.T) {
 		val, _ := c.Get("d")
 		require.Equal(t, 3, val)
 		_, ok := c.Get("a")
+		require.False(t, ok)
+
+		c.Set("b", 6)
+		c.Set("b", 9)
+		c.Set("c", 70)
+		c.Set("e", 80)
+		_, ok = c.Get("d")
 		require.False(t, ok)
 	})
 }
