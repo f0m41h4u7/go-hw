@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -14,6 +13,7 @@ func main() {
 
 	returnCode := RunCmd(os.Args[2:], envs)
 	if returnCode != 0 {
-		log.Fatal(fmt.Errorf(""))
+		log.Printf("command exited with code %d\n", returnCode)
+		log.Fatal()
 	}
 }
