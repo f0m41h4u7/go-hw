@@ -7,7 +7,6 @@ import (
 	"syscall"
 )
 
-// RunCmd runs a command + arguments (cmd) with environment variables from env
 func RunCmd(cmd []string, env Environment) (returnCode int) {
 	cmdExec := exec.Command(cmd[0], cmd[1:]...) //nolint
 	cmdExec.Env = os.Environ()
