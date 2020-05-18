@@ -78,31 +78,31 @@ func parseTag(tag string, fieldType string) error {
 		case len(maxRegexp.FindStringSubmatch(tag)) != 0:
 			fMax = strings.Split(maxRegexp.FindStringSubmatch(tag)[0], ":")[1]
 			if _, err := strconv.Atoi(fMax); err != nil {
-				return fmt.Errorf("max field should be int") //nolint
+				return fmt.Errorf("max field should be int")
 			}
 
 			if min := minRegexp.FindStringSubmatch(tag); len(min) != 0 {
 				fMin = strings.Split(min[0], ":")[1]
 				if _, err := strconv.Atoi(fMin); err != nil {
-					return fmt.Errorf("min field should be int") //nolint
+					return fmt.Errorf("min field should be int")
 				}
 			}
 		// Min
 		case len(minRegexp.FindStringSubmatch(tag)) != 0:
 			fMin = strings.Split(minRegexp.FindStringSubmatch(tag)[0], ":")[1]
 			if _, err := strconv.Atoi(fMin); err != nil {
-				return fmt.Errorf("min field should be int") //nolint
+				return fmt.Errorf("min field should be int")
 			}
 		// Variants
 		case len(inRegexp.FindStringSubmatch(tag)) != 0:
 			temp := strings.Split(strings.Split(inRegexp.FindStringSubmatch(tag)[0], ":")[1], ",")
 			if !isNumerical(temp) {
-				return fmt.Errorf("variants for int should be int") //nolint
+				return fmt.Errorf("variants for int should be int")
 			}
 			fIn = strings.Join(temp, ",")
 		}
 	default:
-		return fmt.Errorf("unsupported type %s", fieldType) //nolint
+		return fmt.Errorf("unsupported type %s", fieldType)
 	}
 	return nil
 }
