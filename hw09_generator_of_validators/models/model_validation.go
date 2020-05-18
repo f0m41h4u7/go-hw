@@ -11,42 +11,10 @@ type ValidationError struct {
 	Err   error
 }
 
-func (t App) Validate() ([]ValidationError, error) {
-	validErrs := []ValidationError{}
-
-	if len(t.Version) != 5 {
-		validErrs = append(validErrs, ValidationError{
-			Field: "Version",
-			Err:   fmt.Errorf("wrong length"),
-		})
-	}
-
-	return validErrs, nil
-}
-func (t Response) Validate() ([]ValidationError, error) {
-	validErrs := []ValidationError{}
-
-	intVariants := []int{200, 404, 500}
-	isVariant := false
-	for _, i := range intVariants {
-		if t.Code == i {
-			isVariant = true
-			break
-		}
-	}
-	if !isVariant {
-		validErrs = append(validErrs, ValidationError{
-			Field: "Code",
-			Err:   fmt.Errorf("not allowed value"),
-		})
-	}
-
-	return validErrs, nil
-}
 func (t User) Validate() ([]ValidationError, error) {
 	validErrs := []ValidationError{}
 
-	if len(t.ID) != 32 {
+	if len(t.ID) != 36 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "ID",
 			Err:   fmt.Errorf("wrong length"),
@@ -93,15 +61,47 @@ func (t User) Validate() ([]ValidationError, error) {
 		})
 	}
 
-	for i, _ := range t.Addresses {
+	for i, _ := range t.Phones {
 
-		if len(t.Addresses[i]) != 250 {
+		if len(t.Phones[i]) != 11 {
 			validErrs = append(validErrs, ValidationError{
-				Field: "Addresses[i]",
+				Field: "Phones[i]",
 				Err:   fmt.Errorf("wrong length"),
 			})
 		}
 
+	}
+
+	return validErrs, nil
+}
+func (t App) Validate() ([]ValidationError, error) {
+	validErrs := []ValidationError{}
+
+	if len(t.Version) != 5 {
+		validErrs = append(validErrs, ValidationError{
+			Field: "Version",
+			Err:   fmt.Errorf("wrong length"),
+		})
+	}
+
+	return validErrs, nil
+}
+func (t Response) Validate() ([]ValidationError, error) {
+	validErrs := []ValidationError{}
+
+	intVariants := []int{200, 404, 500}
+	isVariant := false
+	for _, i := range intVariants {
+		if t.Code == i {
+			isVariant = true
+			break
+		}
+	}
+	if !isVariant {
+		validErrs = append(validErrs, ValidationError{
+			Field: "Code",
+			Err:   fmt.Errorf("not allowed value"),
+		})
 	}
 
 	return validErrs, nil
