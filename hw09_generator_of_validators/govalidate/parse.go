@@ -6,7 +6,6 @@ import (
 	"go/ast"
 	"go/printer"
 	"go/token"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -36,21 +35,23 @@ func clean() {
 	fIn = ""
 }
 
-func setInTag(tag string) {
-	temp := strings.Split(strings.Split(inRegexp.FindStringSubmatch(tag)[0], ":")[1], ",")
-	// Store strings with quotes and numbers without quotes
-	isString := false
-	for i, t := range temp {
-		_, err := strconv.Atoi(t)
-		if (err != nil) || isString {
-			isString = true
-			temp[i] = fmt.Sprintf("%q", temp[i])
+func isNumerical(temp []string) bool {
+	for _, t := range temp {
+		if _, err := strconv.Atoi(t); err != nil {
+			return false
 		}
 	}
-	fIn = strings.Join(temp, ",")
+	return true
 }
 
-func parseTag(tag string, fieldType string) {
+func stringInQuotes(temp []string) string {
+	for i, _ := range temp { //nolint
+		temp[i] = fmt.Sprintf("%q", temp[i])
+	}
+	return strings.Join(temp, ",")
+}
+
+func parseTag(tag string, fieldType string) error {
 	switch {
 	// If string, check length, regexp and variants
 	case (fieldType == "string") || (fieldType == "[]string"):
@@ -60,15 +61,15 @@ func parseTag(tag string, fieldType string) {
 			fLen = strings.Split(lenRegexp.FindStringSubmatch(tag)[0], ":")[1]
 			_, err := strconv.Atoi(fLen)
 			if err != nil {
-				log.Fatal("Len field should be int\n")
+				return fmt.Errorf("len field should be int")
 			}
 		// Regexp
 		case len(regexpRegexp.FindStringSubmatch(tag)) != 0:
-			fRegexp = strings.Split(regexpRegexp.FindStringSubmatch(tag)[0], ":")[1]
-			fRegexp = fmt.Sprintf(`%q`, fRegexp)
+			fRegexp = fmt.Sprintf(`%q`, strings.Split(regexpRegexp.FindStringSubmatch(tag)[0], ":")[1])
 		// Variants
 		case len(inRegexp.FindStringSubmatch(tag)) != 0:
-			setInTag(tag)
+			temp := strings.Split(strings.Split(inRegexp.FindStringSubmatch(tag)[0], ":")[1], ",")
+			fIn = stringInQuotes(temp)
 		}
 	// If int, check min/max and variants
 	case (fieldType == "int") || (fieldType == "[]int"):
@@ -76,35 +77,37 @@ func parseTag(tag string, fieldType string) {
 		// Max and/or min
 		case len(maxRegexp.FindStringSubmatch(tag)) != 0:
 			fMax = strings.Split(maxRegexp.FindStringSubmatch(tag)[0], ":")[1]
-			_, err := strconv.Atoi(fMax)
-			if err != nil {
-				log.Fatal("Max field should be int\n")
+			if _, err := strconv.Atoi(fMax); err != nil {
+				return fmt.Errorf("max field should be int")
 			}
 
 			if min := minRegexp.FindStringSubmatch(tag); len(min) != 0 {
 				fMin = strings.Split(min[0], ":")[1]
-				_, err := strconv.Atoi(fMin)
-				if err != nil {
-					log.Fatal("Min field should be int\n")
+				if _, err := strconv.Atoi(fMin); err != nil {
+					return fmt.Errorf("min field should be int")
 				}
 			}
 		// Min
 		case len(minRegexp.FindStringSubmatch(tag)) != 0:
 			fMin = strings.Split(minRegexp.FindStringSubmatch(tag)[0], ":")[1]
-			_, err := strconv.Atoi(fMin)
-			if err != nil {
-				log.Fatal("Min field should be int\n")
+			if _, err := strconv.Atoi(fMin); err != nil {
+				return fmt.Errorf("min field should be int")
 			}
 		// Variants
 		case len(inRegexp.FindStringSubmatch(tag)) != 0:
-			setInTag(tag)
+			temp := strings.Split(strings.Split(inRegexp.FindStringSubmatch(tag)[0], ":")[1], ",")
+			if !isNumerical(temp) {
+				return fmt.Errorf("variants for int should be int")
+			}
+			fIn = strings.Join(temp, ",")
 		}
 	default:
-		log.Fatalf("Unsupported type %s", fieldType)
+		return fmt.Errorf("unsupported type %s", fieldType)
 	}
+	return nil
 }
 
-func parseStructs(fset *token.FileSet) {
+func parseStructs(fset *token.FileSet) error {
 	structsToValidate = []TemplateStruct{}
 	for n, s := range Structs {
 		tempFields := []TemplateField{}
@@ -115,13 +118,16 @@ func parseStructs(fset *token.FileSet) {
 			_ = printer.Fprint(&typeName, fset, f.Type)
 			fieldType, err := normalizeType(typeName.String())
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 
 			if f.Tag == nil {
 				clean()
 			} else {
-				parseTag(f.Tag.Value, fieldType)
+				err = parseTag(f.Tag.Value, fieldType)
+				if err != nil {
+					return err
+				}
 			}
 
 			tempFields = append(tempFields, TemplateField{
@@ -141,4 +147,5 @@ func parseStructs(fset *token.FileSet) {
 			Fields: tempFields,
 		})
 	}
+	return nil
 }

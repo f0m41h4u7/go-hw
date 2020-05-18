@@ -24,13 +24,23 @@ var (
 )
 
 func main() {
+	if len(os.Args) != 2 { //nolint
+		log.Fatal("Wrong argument amount")
+	}
+	err := runGenerator(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runGenerator(modelsFile string) error {
 	Types = make(map[string]string)
 	Structs = make(map[string]*ast.TypeSpec)
 
 	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, os.Args[1], nil, parser.ParseComments)
+	node, err := parser.ParseFile(fset, modelsFile, nil, parser.ParseComments)
 	if err != nil {
-		log.Fatal(fmt.Errorf("wrong argument: %w", err))
+		return fmt.Errorf("wrong argument: %w", err)
 	}
 
 	for _, f := range node.Decls {
@@ -49,10 +59,7 @@ func main() {
 			currStruct, ok := currType.Type.(*ast.StructType)
 			if !ok {
 				var typeName bytes.Buffer
-				err := printer.Fprint(&typeName, fset, currType.Type)
-				if err != nil {
-					log.Fatalf("failed printing %s", err)
-				}
+				_ = printer.Fprint(&typeName, fset, currType.Type)
 				Types[currType.Name.String()] = typeName.String()
 				continue
 			}
@@ -76,11 +83,14 @@ func main() {
 	}
 
 	if len(Structs) == 0 {
-		log.Fatalf("No validation tags were found\n")
+		return fmt.Errorf("no validation tags were found")
 	}
 
-	parseStructs(fset)
+	err = parseStructs(fset)
+	if err != nil {
+		return err
+	}
 
-	path := pathRegexp.Split(os.Args[1], -1)[0] + "model_validation.go"
-	generate(path)
+	path := pathRegexp.Split(modelsFile, -1)[0] + "model_validation.go"
+	return generate(path)
 }

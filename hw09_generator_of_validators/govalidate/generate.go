@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"text/template"
@@ -158,7 +157,7 @@ if !matched {
 {{- end }}
 `
 
-func generate(path string) {
+func generate(path string) error {
 	t, err := template.New("validate").Funcs(template.FuncMap{
 		"arrayElement": func(field TemplateField) TemplateField {
 			field.Type = strings.Split(field.Type, "[]")[1]
@@ -167,22 +166,22 @@ func generate(path string) {
 		},
 	}).Parse(validate)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = t.New("intValidate").Parse(intValidate)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = t.New("stringValidate").Parse(stringValidate)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 
@@ -202,13 +201,14 @@ type ValidationError struct{
 `
 	_, err = file.Write([]byte(beginning))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, s := range structsToValidate {
 		err = t.ExecuteTemplate(file, "validate", s)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }
