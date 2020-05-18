@@ -61,7 +61,7 @@ func parseTag(tag string, fieldType string) error {
 			fLen = strings.Split(lenRegexp.FindStringSubmatch(tag)[0], ":")[1]
 			_, err := strconv.Atoi(fLen)
 			if err != nil {
-				return fmt.Errorf("len field should be int") //nolint
+				return fmt.Errorf("len field should be int")
 			}
 		// Regexp
 		case len(regexpRegexp.FindStringSubmatch(tag)) != 0:

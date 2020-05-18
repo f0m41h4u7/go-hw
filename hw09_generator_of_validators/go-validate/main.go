@@ -27,7 +27,7 @@ var (
 )
 
 func main() {
-	if len(os.Args) != 2 { //nolint
+	if len(os.Args) != 2 {
 		log.Fatal("Wrong argument amount")
 	}
 	err := runGenerator(os.Args[1])

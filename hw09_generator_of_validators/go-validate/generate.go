@@ -34,7 +34,7 @@ func normalizeType(currType string) (string, error) {
 			return usualType, nil
 		}
 	}
-	return "", fmt.Errorf("unknown type %s", currType) //nolint
+	return "", fmt.Errorf("unknown type %s", currType)
 }
 
 var validate = `func (t {{ .Name }}) Validate() ([]ValidationError, error) {
