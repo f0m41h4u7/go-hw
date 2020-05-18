@@ -22,7 +22,6 @@ type TemplateStruct struct {
 	Fields []TemplateField
 }
 
-// Convert user-defined types
 func normalizeType(currType string) (string, error) {
 	normalTypes := []string{"int", "string", "[]int", "[]string"}
 	for _, n := range normalTypes {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -21,6 +22,8 @@ var (
 
 	needsValidation = regexp.MustCompile(`.*validate:"(len|regexp|min|max|in):.+"`)
 	pathRegexp      = regexp.MustCompile(`[^\/]+\.go`)
+
+	ErrNoValidationTags = errors.New("no validation tags were found")
 )
 
 func main() {
@@ -83,7 +86,7 @@ func runGenerator(modelsFile string) error {
 	}
 
 	if len(Structs) == 0 {
-		return fmt.Errorf("no validation tags were found")
+		return ErrNoValidationTags
 	}
 
 	err = parseStructs(fset)

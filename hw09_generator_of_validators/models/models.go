@@ -2,7 +2,7 @@ package models
 
 type UserRole string
 
-// NOTE: Several struct specs in one type declaration are allowed
+//nolint
 type (
 	User struct {
 		ID        string `json:"id" validate:"len:32"`
