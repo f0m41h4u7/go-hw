@@ -8,7 +8,7 @@ type (
 		ID        string `json:"id" validate:"len:32"`
 		Name      string
 		Age       int      `validate:"min:18|max:50"`
-		Email     string   `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
+		Email     string   `validate:"regexp:^\w+@\w+\.\w+$"`
 		Role      UserRole `validate:"in:admin,stuff"`
 		Addresses []string `validate:"len:250"`
 	}
