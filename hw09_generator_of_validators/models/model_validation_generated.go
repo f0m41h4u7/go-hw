@@ -12,26 +12,26 @@ type ValidationError struct {
 }
 
 func (t User) Validate() ([]ValidationError, error) {
-	validErrs := []ValidationError{}
+	var validErrs []ValidationError
 
 	if len(t.ID) != 36 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "ID",
-			Err:   fmt.Errorf("wrong length"),
+			Err:   fmt.Errorf("wrong length: expected %d, got %d", 36, len(t.ID)),
 		})
 	}
 
 	if t.Age < 18 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Age",
-			Err:   fmt.Errorf("less than min"),
+			Err:   fmt.Errorf("%d should be more than %d", t.Age, 18),
 		})
 	}
 
 	if t.Age > 50 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Age",
-			Err:   fmt.Errorf("more than max"),
+			Err:   fmt.Errorf("%d should be less than %d", t.Age, 50),
 		})
 	}
 
@@ -42,7 +42,7 @@ func (t User) Validate() ([]ValidationError, error) {
 	if !matched {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Email",
-			Err:   fmt.Errorf("does not match regexp"),
+			Err:   fmt.Errorf("%s does not match regexp", t.Email),
 		})
 	}
 
@@ -57,7 +57,7 @@ func (t User) Validate() ([]ValidationError, error) {
 	if !isStrVariant {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Role",
-			Err:   fmt.Errorf("not allowed value"),
+			Err:   fmt.Errorf("not allowed value %s", t.Role),
 		})
 	}
 
@@ -66,7 +66,7 @@ func (t User) Validate() ([]ValidationError, error) {
 		if len(t.Phones[i]) != 11 {
 			validErrs = append(validErrs, ValidationError{
 				Field: "Phones[i]",
-				Err:   fmt.Errorf("wrong length"),
+				Err:   fmt.Errorf("wrong length: expected %d, got %d", 11, len(t.Phones[i])),
 			})
 		}
 
@@ -75,19 +75,19 @@ func (t User) Validate() ([]ValidationError, error) {
 	return validErrs, nil
 }
 func (t App) Validate() ([]ValidationError, error) {
-	validErrs := []ValidationError{}
+	var validErrs []ValidationError
 
 	if len(t.Version) != 5 {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Version",
-			Err:   fmt.Errorf("wrong length"),
+			Err:   fmt.Errorf("wrong length: expected %d, got %d", 5, len(t.Version)),
 		})
 	}
 
 	return validErrs, nil
 }
 func (t Response) Validate() ([]ValidationError, error) {
-	validErrs := []ValidationError{}
+	var validErrs []ValidationError
 
 	intVariants := []int{200, 404, 500}
 	isVariant := false
@@ -100,7 +100,7 @@ func (t Response) Validate() ([]ValidationError, error) {
 	if !isVariant {
 		validErrs = append(validErrs, ValidationError{
 			Field: "Code",
-			Err:   fmt.Errorf("not allowed value"),
+			Err:   fmt.Errorf("not allowed value %d", t.Code),
 		})
 	}
 

@@ -94,6 +94,6 @@ func runGenerator(modelsFile string) error {
 		return err
 	}
 
-	path := pathRegexp.Split(modelsFile, -1)[0] + "model_validation.go"
+	path := pathRegexp.Split(modelsFile, -1)[0] + "model_validation_generated.go"
 	return generate(path)
 }

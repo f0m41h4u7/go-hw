@@ -38,7 +38,7 @@ func normalizeType(currType string) (string, error) {
 }
 
 var validate = `func (t {{ .Name }}) Validate() ([]ValidationError, error) {
-  validErrs := []ValidationError{}
+  var validErrs []ValidationError
   {{ range .Fields}}
 
   {{- if (eq .Type "int")}}
@@ -73,7 +73,7 @@ var intValidate = `{{- if (ne .Min "")}}
 if t.{{.Name}} < {{.Min}} {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("less than min"),
+    Err: fmt.Errorf("%d should be more than %d", t.{{.Name}}, {{.Min}}),
   })
 }
 
@@ -84,7 +84,7 @@ if t.{{.Name}} < {{.Min}} {
 if t.{{.Name}} > {{.Max}} {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("more than max"),
+    Err: fmt.Errorf("%d should be less than %d", t.{{.Name}}, {{.Max}}),
   })
 }
 
@@ -103,7 +103,7 @@ for _, i := range intVariants {
 if !isVariant {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("not allowed value"),
+    Err: fmt.Errorf("not allowed value %d", t.{{.Name}}),
   })
 }
 
@@ -123,7 +123,7 @@ for _, i := range strVariants {
 if !isStrVariant {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("not allowed value"),
+    Err: fmt.Errorf("not allowed value %s", t.{{.Name}}),
   })
 }
 
@@ -134,7 +134,7 @@ if !isStrVariant {
 if len(t.{{.Name}}) != {{.Len}} {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("wrong length"),
+    Err: fmt.Errorf("wrong length: expected %d, got %d", {{.Len}}, len(t.{{.Name}})),
   })
 }
 
@@ -149,7 +149,7 @@ if err != nil {
 if !matched {
   validErrs = append(validErrs, ValidationError{
     Field: "{{.Name}}",
-    Err: fmt.Errorf("does not match regexp"),
+    Err: fmt.Errorf("%s does not match regexp", t.{{.Name}}),
   })
 }
 
