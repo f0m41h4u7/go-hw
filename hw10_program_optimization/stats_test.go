@@ -36,4 +36,34 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+
+	t.Run("no email", func(t *testing.T) {
+		testData := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"mLynch@broWsecat.com","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}`
+		_, err := GetDomainStat(bytes.NewBufferString(testData), "com")
+		require.Error(t, err)
+	})
+
+	t.Run("empty email", func(t *testing.T) {
+		testData := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}`
+		_, err := GetDomainStat(bytes.NewBufferString(testData), "com")
+		require.Error(t, err)
+	})
+
+	t.Run("empty data", func(t *testing.T) {
+		var testData string
+		_, err := GetDomainStat(bytes.NewBufferString(testData), "com")
+		require.Error(t, err)
+	})
+
+	t.Run("not valid json", func(t *testing.T) {
+		testData := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email""mLynch@broWsecat.com","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}`
+		_, err := GetDomainStat(bytes.NewBufferString(testData), "com")
+		require.Error(t, err)
+	})
 }
