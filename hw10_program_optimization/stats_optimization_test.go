@@ -4,6 +4,8 @@ package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
 	"archive/zip"
+	"bytes"
+	"io"
 	"testing"
 	"time"
 
@@ -46,6 +48,34 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 
 	require.Less(t, int64(result.T), int64(timeLimit), "the program is too slow")
 	require.Less(t, mem, memoryLimit, "the program is too greedy")
+}
+
+func TestOnSmallData(t *testing.T) {
+	const mLim = mb
+	const tLim = 15 * time.Millisecond
+
+	bench := func(b *testing.B) {
+		data := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"mLynch@broWsecat.com","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
+{"Id":4,"Name":"Gregory Reid","Username":"tButler","Email":"5Moore@Teklist.net","Phone":"520-04-16","Password":"r639qLNu","Address":"Sunfield Park 20"}
+{"Id":5,"Name":"Janice Rose","Username":"KeithHart","Email":"nulla@Linktype.com","Phone":"146-91-01","Password":"acSBF5","Address":"Russell Trail 61"}`
+
+		var r io.Reader
+		r = bytes.NewBufferString(data)
+		b.StartTimer()
+		_, err := GetDomainStat(r, "com")
+		b.StopTimer()
+		require.NoError(t, err)
+	}
+
+	result := testing.Benchmark(bench)
+	mem := int64(result.MemBytes) / mb
+	t.Logf("time used: %s", result.T)
+	t.Logf("memory used: %dMb", mem)
+
+	require.Less(t, int64(result.T), int64(tLim), "the program is too slow")
+	require.Less(t, mem, mLim, "the program is too greedy")
 }
 
 var expectedBizStat = DomainStat{

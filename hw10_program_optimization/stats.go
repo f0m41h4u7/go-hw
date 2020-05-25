@@ -1,66 +1,56 @@
 package hw10_program_optimization //nolint:golint,stylecheck
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
 	"strings"
-)
 
-type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
-}
+	"github.com/valyala/fastjson"
+)
 
 type DomainStat map[string]int
 
+var (
+	reg        *regexp.Regexp
+	emails     [100_000]string
+	p          fastjson.Parser
+	ErrNoEmail = errors.New("line does not contain email")
+)
+
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %s", err)
-	}
-	return countDomains(u, domain)
-}
-
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
+	// Get Users
 	content, err := ioutil.ReadAll(r)
 	if err != nil {
-		return
+		return nil, err
 	}
-
 	lines := strings.Split(string(content), "\n")
 	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
-	return
-}
-
-func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
-
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
+		v, err := p.Parse(line)
 		if err != nil {
 			return nil, err
 		}
+		emails[i] = string(v.GetStringBytes("Email"))
+		if (emails[i] == "") || (emails[i] == " ") {
+			return nil, fmt.Errorf("%w: %s", ErrNoEmail, line)
+		}
+	}
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+	// Count domains
+	reg, err = regexp.Compile("\\." + domain)
+	if err != nil {
+		return nil, err
+	}
+	result := make(DomainStat)
+
+	for _, e := range emails {
+		if e == "" {
+			break
+		}
+		if reg.MatchString(e) {
+			result[strings.ToLower(strings.SplitN(e, "@", 2)[1])]++
 		}
 	}
 	return result, nil
