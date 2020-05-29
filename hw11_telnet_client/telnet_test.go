@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"sync"
@@ -62,4 +63,52 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	t.Run("test empty message", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+		defer func() { require.NoError(t, l.Close()) }()
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+
+			in := &bytes.Buffer{}
+			out := &bytes.Buffer{}
+
+			timeout, _ := time.ParseDuration("10s")
+
+			client := NewTelnetClient(l.Addr().String(), timeout, ioutil.NopCloser(in), out)
+			require.NoError(t, client.Connect())
+			require.NoError(t, client.Close())
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			conn, err := l.Accept()
+			require.NoError(t, err)
+			require.NotNil(t, conn)
+			defer func() { require.NoError(t, conn.Close()) }()
+
+			request := make([]byte, 1024)
+			_, err = conn.Read(request)
+			require.Equal(t, fmt.Errorf("EOF"), err)
+		}()
+
+		wg.Wait()
+	})
+
+	t.Run("test nonexistent address", func(t *testing.T) {
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		timeout, _ := time.ParseDuration("10s")
+
+		client := NewTelnetClient("127.0.0.1:4343", timeout, ioutil.NopCloser(in), out)
+		require.Error(t, client.Connect())
+	})
+
 }
