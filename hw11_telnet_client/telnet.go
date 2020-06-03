@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -34,19 +32,9 @@ type TelnetClient interface {
 }
 
 func transferData(in io.Reader, out io.Writer) error {
-	sc := bufio.NewScanner(in)
-	for sc.Scan() {
-		if err := sc.Err(); err != nil {
-			return err
-		}
-		text := sc.Text()
-		if text != "" {
-			_, err := fmt.Fprintf(out, text+"\n")
-			if err != nil {
-				errLog.Println("...Connection was closed by peer")
-				return ErrConnectionClosed
-			}
-		}
+	_, err := io.Copy(out, in)
+	if err != nil {
+		return ErrConnectionClosed
 	}
 	return nil
 }

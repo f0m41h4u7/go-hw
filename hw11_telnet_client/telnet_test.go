@@ -75,8 +75,8 @@ func TestTelnetClient(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			in := &bytes.Buffer{}
-			out := &bytes.Buffer{}
+			in := new(bytes.Buffer)
+			out := new(bytes.Buffer)
 
 			timeout, _ := time.ParseDuration("10s")
 
