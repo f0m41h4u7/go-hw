@@ -12,40 +12,38 @@ import (
 )
 
 var (
-	timeout          string
+	timeout          time.Duration
 	ErrNotEnoughArgs = errors.New("not enough arguments, should be 3 at least")
 	sigs             = make(chan os.Signal, 1)
 )
 
-const minLenArgs = 3
+const (
+	minLenArgs = 3
+	maxLenArgs = 4
+)
 
 func init() {
-	flag.StringVar(&timeout, "timeout", "0", "connection timeout")
+	flag.DurationVar(&timeout, "timeout", 0, "connection timeout")
 }
 
 func main() {
 	flag.Parse()
-	if len(os.Args) < minLenArgs {
+	if (len(os.Args) < minLenArgs) || (len(os.Args) > maxLenArgs) {
 		log.Fatal(ErrNotEnoughArgs)
 	}
 	host := os.Args[len(os.Args)-2]
 	port := os.Args[len(os.Args)-1]
 
-	validTime, err := time.ParseDuration(timeout)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	c := NewTelnetClient(
 		net.JoinHostPort(host, port),
-		validTime,
+		timeout,
 		os.Stdin,
 		os.Stdout,
 	)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
-	err = c.Connect()
+	err := c.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,16 +57,15 @@ func main() {
 	go func() { errs <- c.Send() }()
 	go func() { errs <- c.Receive() }()
 
-	for {
-		select {
-		case <-sigs:
-			return
-		case err = <-errs:
-			if err != nil {
-				log.Fatal(err)
-			}
-			errLog.Println("...EOF")
-			return
+	select {
+	case <-sigs:
+		signal.Stop(sigs)
+		return
+	case err = <-errs:
+		if err != nil {
+			log.Fatal(err)
 		}
+		errLog.Println("...EOF")
+		return
 	}
 }

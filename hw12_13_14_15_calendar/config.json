@@ -1,0 +1,17 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 1337
+  },
+  "logger": {
+    "file": "/home/fomalhaut/log.out",
+    "level": "debug"
+  },
+  "sql": "true",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 1338,
+    "user": "root",
+    "password": "toor"
+  }
+}
