@@ -11,12 +11,16 @@ import (
 	"go.uber.org/zap"
 )
 
-func StartServer() {
-	gin.SetMode(gin.ReleaseMode)
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(ginzap.Logger(3*time.Second, zap.L()))
-	r.GET("/", helloworld)
-	err := r.Run(net.JoinHostPort(config.Conf.Server.Host, config.Conf.Server.Port))
+	r.GET("/", Helloworld)
+	return r
+}
+
+func StartServer() {
+	gin.SetMode(gin.ReleaseMode)
+	err := SetupRouter().Run(net.JoinHostPort(config.Conf.Server.Host, config.Conf.Server.Port))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -6,6 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func helloworld(c *gin.Context) {
+func Helloworld(c *gin.Context) {
 	c.String(http.StatusOK, "Hello world!")
 }

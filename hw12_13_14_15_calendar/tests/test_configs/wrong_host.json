@@ -1,0 +1,11 @@
+{
+  "server": {
+    "host": "qqwqwq",
+    "port": 1337
+  },
+  "logger": {
+    "file": "log.out",
+    "level": "debug"
+  },
+  "sql": "false"
+}

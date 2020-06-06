@@ -1,10 +1,19 @@
+CMD := calendar
+
 build:
-	go build ./... -o calendar
+	go build -o $(CMD) .
+
+run:
+	make build
+	./$(CMD)
 
 test:
-	go test -race ./...
+	go test -v -count=1 -race -gcflags=-l -timeout=30s ./tests
 
 lint:
 	golangci-lint run ./...
 
-.PHONY: build
+clean:
+	rm $(CMD)
+
+.PHONY: build run test lint clean

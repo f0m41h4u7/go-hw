@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -14,7 +13,7 @@ var (
 	ErrWrongConfig = errors.New("cannot parse config file")
 )
 
-func InitConfig(cfgFile string) {
+func InitConfig(cfgFile string) error {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -26,13 +25,12 @@ func InitConfig(cfgFile string) {
 		viper.SetConfigType("json")
 	}
 
-	viper.ReadInConfig()
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(ErrWrongConfig)
+		return ErrWrongConfig
 	}
 
-	err := viper.Unmarshal(&Conf)
-	if err != nil {
-		log.Fatal(ErrWrongConfig)
+	if err := viper.Unmarshal(&Conf); err != nil {
+		return ErrWrongConfig
 	}
+	return Conf.validate()
 }

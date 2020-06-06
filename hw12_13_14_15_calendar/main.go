@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/config"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/http"
@@ -12,8 +13,6 @@ var (
 	cfgFile string
 )
 
-const minLenArgs = 2
-
 func init() {
 	flag.StringVar(&cfgFile, "config", "", "path to config file")
 }
@@ -21,7 +20,14 @@ func init() {
 func main() {
 	flag.Parse()
 
-	config.InitConfig(cfgFile)
-	logger.InitLogger()
+	err := config.InitConfig(cfgFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = logger.InitLogger()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.StartServer()
 }
