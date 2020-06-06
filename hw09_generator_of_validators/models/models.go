@@ -5,6 +5,10 @@ package models
 type UserRole string
 
 // NOTE: Several struct specs in one type declaration are allowed.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4949677b261b4a96c4613acd5edd3da796c9443f
 type (
 	User struct {
 		ID     string `json:"id" validate:"len:36"`
