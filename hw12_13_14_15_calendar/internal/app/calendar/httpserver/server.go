@@ -1,4 +1,4 @@
-package http
+package httpserver
 
 import (
 	"log"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	ginzap "github.com/akath19/gin-zap"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

@@ -7,8 +7,9 @@
     "file": "log.out",
     "level": "debug"
   },
-  "sql": "false",
+  "sql": "true",
   "database": {
+    "name": "default",
     "host": "127.0.0.1",
     "port": 1338,
     "user": "qwerty",

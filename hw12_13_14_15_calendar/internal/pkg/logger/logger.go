@@ -4,13 +4,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 var (
-	Lg               *zap.Logger
 	ErrWrongLogLevel = errors.New("log level should be one of debug/error/info/warn")
 	DefaultLogFile   = "log.out"
 )

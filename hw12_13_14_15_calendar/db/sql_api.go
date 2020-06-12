@@ -1,45 +1,45 @@
 package db
 
-//nolint: golint
+//nolint
 import (
 	"time"
 
-	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/config"
+	"github.com/araddon/dateparse"
+	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
+	cl "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
+	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
+var schema = "CREATE TABLE IF NOT EXISTS events (uuid TEXT, title TEXT, start TEXT, end TEXT, description TEXT, ownerid TEXT, notifyin TEXT);"
+
 type SQLDb struct {
-	base *gorm.DB
+	base *sqlx.DB
 }
 
-func NewSQLDatabase() (Database, error) {
-	var err error
-	connectAddr := cfg.Conf.Database.User + ":" + cfg.Conf.Database.Password + "@(" + cfg.Conf.Database.Host + ":" + cfg.Conf.Database.Port + ")/default?charset=utf8&parseTime=True&loc=Local"
-
-	var DB SQLDb
-	DB.base, err = gorm.Open("mysql", connectAddr)
+func InitSQLConnection() (*sqlx.DB, error) {
+	base, err := sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
-		return &DB, err
+		return nil, err
 	}
-	DB.base.AutoMigrate(&Event{})
-	return &DB, nil
+	base.MustExec(schema)
+	return base, nil
 }
 
-func (db *SQLDb) GetAllEvents() ([]Event, error) {
-	evs := []Event{}
-	err := db.base.Find(&evs).Error
-	return evs, err
-}
-
-func (db *SQLDb) GetEventByUUID(uuid uuid.UUID) (Event, error) {
-	var event Event
-	err := db.base.Where("UUID = ?", uuid.String()).First(&event).Error
-	if err != nil {
-		return event, ErrEventNotFound
-	}
-	return event, nil
+func NewSQLDatabase(base *sqlx.DB) cl.StorageInterface {
+	/*
+		var err error
+		var DB SQLDb
+		DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
+		if err != nil {
+			return &DB, err
+		}
+		DB.base.MustExec(schema)
+		return &DB, nil
+	*/
+	return &SQLDb{base: base}
 }
 
 func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string) error {
@@ -52,12 +52,20 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 		return ErrTooShortEvent
 	}
 
-	evs, err := db.GetAllEvents()
-	if err != nil || len(evs) == 0 {
-		return ErrEventNotFound
+	ev := in.Event{}
+	rows, err := db.base.Queryx("SELECT * FROM events")
+	if err != nil {
+		return err
 	}
-	for _, ev := range evs {
-		if !((ev.Start.Before(end) && ev.End.Before(start)) || (start.Before(ev.End) && end.Before(ev.Start))) {
+	var s, e time.Time
+	for rows.Next() {
+		err := rows.StructScan(&ev)
+		if err != nil {
+			return err
+		}
+		s, _ = dateparse.ParseAny(ev.Start)
+		e, _ = dateparse.ParseAny(ev.End)
+		if !((s.Before(end) && e.Before(start)) || (start.Before(e) && end.Before(s))) {
 			if ev.UUID != uuidExcept {
 				return ErrDateBusy
 			}
@@ -66,59 +74,73 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 	return nil
 }
 
-func (db *SQLDb) CreateEvent(ev Event) error {
-	if err := db.validateTime(ev.Start, ev.End, ""); err != nil {
-		return err
+func (db *SQLDb) CreateEvent(ev in.Event) (uuid.UUID, error) {
+	id := uuid.New()
+	start, _ := dateparse.ParseAny(ev.Start)
+	end, _ := dateparse.ParseAny(ev.End)
+	if err := db.validateTime(start, end, ""); err != nil {
+		return id, err
 	}
-	err := db.base.Create(&ev).Error
-	return err
+	ev.UUID = id.String()
+	_, err := db.base.Exec(`INSERT INTO events (uuid, title, start, end, description, ownerid, notifyin) VALUES (?, ?, ?, ?, ?, ?, ?)`, id.String(), ev.Title, ev.Start, ev.End, ev.Description, ev.OwnerID, ev.NotifyIn)
+	return id, err
 }
 
-func (db *SQLDb) GetFromInterval(start time.Time, delta time.Duration) ([]Event, error) {
-	evs := []Event{}
+func (db *SQLDb) GetAllEvents() ([]in.Event, error) {
+	evs := []in.Event{}
+	err := db.base.Select(&evs, "SELECT * FROM events")
+	return evs, err
+}
+
+func (db *SQLDb) GetEventByUUID(id uuid.UUID) (in.Event, error) {
+	ev := in.Event{}
+	err := db.base.Get(&ev, "SELECT * FROM events WHERE uuid = ?", id.String())
+	return ev, err
+}
+
+func (db *SQLDb) GetFromInterval(start time.Time, delta time.Duration) ([]in.Event, error) {
+	res := []in.Event{}
 	end := start.Add(delta)
-	err := db.base.Where("Start >= ? AND End <= ?", start, end).Find(&evs).Error
+	var s, e time.Time
+	evs, err := db.GetAllEvents()
 	if err != nil {
 		return nil, err
 	}
-	if len(evs) == 0 {
-		return nil, ErrEventNotFound
+	for _, ev := range evs {
+		s, _ = dateparse.ParseAny(ev.Start)
+		e, _ = dateparse.ParseAny(ev.End)
+		if (start.Before(s) || start == s) && (e.Before(end) || end == e) {
+			res = append(res, ev)
+		}
 	}
-	return evs, nil
+	if len(res) != 0 {
+		return res, nil
+	}
+	return nil, ErrEventNotFound
 }
 
-func (db *SQLDb) UpdateEvent(ev Event, uuid uuid.UUID) error {
-	var event Event
-	err := db.base.Where("UUID = ?", uuid.String()).First(&event).Error
-	if err != nil {
+func (db *SQLDb) UpdateEvent(ev in.Event, id uuid.UUID) error {
+	if _, err := db.GetEventByUUID(id); err != nil {
 		return ErrEventNotFound
 	}
-
-	if err = db.validateTime(ev.Start, ev.End, uuid.String()); err != nil {
+	start, _ := dateparse.ParseAny(ev.Start)
+	end, _ := dateparse.ParseAny(ev.End)
+	if err := db.validateTime(start, end, id.String()); err != nil {
 		return err
 	}
-
-	event.Title = ev.Title
-	event.Start = ev.Start
-	event.End = ev.End
-	event.Description = ev.Description
-	event.OwnerID = ev.OwnerID
-	event.NotifyIn = ev.NotifyIn
-
-	err = db.base.Save(&event).Error
+	ev.UUID = id.String()
+	_, err := db.base.NamedExec(`UPDATE events SET title=:title, start=:start, end=:end, description=:description, ownerid=:ownerid, notifyin=:notifyin WHERE :uuid = :uuid`, ev)
 	return err
 }
 
-func (db *SQLDb) DeleteEvent(uuid uuid.UUID) error {
-	var event Event
-	err := db.base.Where("UUID = ?", uuid.String()).First(&event).Error
-	if err != nil {
+func (db *SQLDb) DeleteEvent(id uuid.UUID) error {
+	if _, err := db.GetEventByUUID(id); err != nil {
 		return ErrEventNotFound
 	}
+	_, err := db.base.Exec("DELETE FROM events WHERE uuid = ?", id)
+	return err
+}
 
-	err = db.base.Delete(event).Error
-	if err != nil {
-		return err
-	}
-	return nil
+func (db *SQLDb) DeleteAll() {
+	_, _ = db.base.Exec("DELETE FROM events")
 }
