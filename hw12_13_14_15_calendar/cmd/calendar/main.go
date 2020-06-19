@@ -11,8 +11,10 @@ import (
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/logger"
 )
 
+//nolint:unused
 var (
 	cfgFile string
+	app     calendar.Calendar
 )
 
 func init() {
@@ -34,11 +36,10 @@ func main() {
 
 	var st calendar.StorageInterface
 	if config.Conf.SQL {
-		conn, err := db.InitSQLConnection()
+		st, err = db.NewSQLDatabase()
 		if err != nil {
 			log.Fatal(err)
 		}
-		st = db.NewSQLDatabase(conn)
 	} else {
 		st, err = db.NewInMemDatabase()
 		if err != nil {
@@ -46,7 +47,7 @@ func main() {
 		}
 	}
 
-	calendar.TheCalendar = calendar.Calendar{
+	app = calendar.Calendar{
 		Storage: st,
 	}
 

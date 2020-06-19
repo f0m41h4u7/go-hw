@@ -8,15 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
-var TheCalendar Calendar
-
 type Calendar struct {
 	Storage StorageInterface
 }
 
-func NewCalendar(st *StorageInterface) {
-	TheCalendar = Calendar{
-		Storage: *st,
+func NewCalendar(st StorageInterface) Calendar {
+	return Calendar{
+		Storage: st,
 	}
 }
 

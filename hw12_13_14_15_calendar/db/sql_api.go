@@ -19,27 +19,15 @@ type SQLDb struct {
 	base *sqlx.DB
 }
 
-func InitSQLConnection() (*sqlx.DB, error) {
-	base, err := sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
+func NewSQLDatabase() (cl.StorageInterface, error) {
+	var err error
+	var DB SQLDb
+	DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
-		return nil, err
+		return &DB, err
 	}
-	base.MustExec(schema)
-	return base, nil
-}
-
-func NewSQLDatabase(base *sqlx.DB) cl.StorageInterface {
-	/*
-		var err error
-		var DB SQLDb
-		DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
-		if err != nil {
-			return &DB, err
-		}
-		DB.base.MustExec(schema)
-		return &DB, nil
-	*/
-	return &SQLDb{base: base}
+	DB.base.MustExec(schema)
+	return &DB, nil
 }
 
 func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string) error {
@@ -57,14 +45,19 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 	if err != nil {
 		return err
 	}
-	var s, e time.Time
 	for rows.Next() {
 		err := rows.StructScan(&ev)
 		if err != nil {
 			return err
 		}
-		s, _ = dateparse.ParseAny(ev.Start)
-		e, _ = dateparse.ParseAny(ev.End)
+		s, err := dateparse.ParseAny(ev.Start)
+		if err != nil {
+			return err
+		}
+		e, err := dateparse.ParseAny(ev.End)
+		if err != nil {
+			return err
+		}
 		if !((s.Before(end) && e.Before(start)) || (start.Before(e) && end.Before(s))) {
 			if ev.UUID != uuidExcept {
 				return ErrDateBusy
@@ -76,13 +69,19 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 
 func (db *SQLDb) CreateEvent(ev in.Event) (uuid.UUID, error) {
 	id := uuid.New()
-	start, _ := dateparse.ParseAny(ev.Start)
-	end, _ := dateparse.ParseAny(ev.End)
+	start, err := dateparse.ParseAny(ev.Start)
+	if err != nil {
+		return id, err
+	}
+	end, err := dateparse.ParseAny(ev.End)
+	if err != nil {
+		return id, err
+	}
 	if err := db.validateTime(start, end, ""); err != nil {
 		return id, err
 	}
 	ev.UUID = id.String()
-	_, err := db.base.Exec(`INSERT INTO events (uuid, title, start, end, description, ownerid, notifyin) VALUES (?, ?, ?, ?, ?, ?, ?)`, id.String(), ev.Title, ev.Start, ev.End, ev.Description, ev.OwnerID, ev.NotifyIn)
+	_, err = db.base.Exec(`INSERT INTO events (uuid, title, start, end, description, ownerid, notifyin) VALUES (?, ?, ?, ?, ?, ?, ?)`, id.String(), ev.Title, ev.Start, ev.End, ev.Description, ev.OwnerID, ev.NotifyIn)
 	return id, err
 }
 
@@ -101,14 +100,19 @@ func (db *SQLDb) GetEventByUUID(id uuid.UUID) (in.Event, error) {
 func (db *SQLDb) GetFromInterval(start time.Time, delta time.Duration) ([]in.Event, error) {
 	res := []in.Event{}
 	end := start.Add(delta)
-	var s, e time.Time
 	evs, err := db.GetAllEvents()
 	if err != nil {
 		return nil, err
 	}
 	for _, ev := range evs {
-		s, _ = dateparse.ParseAny(ev.Start)
-		e, _ = dateparse.ParseAny(ev.End)
+		s, err := dateparse.ParseAny(ev.Start)
+		if err != nil {
+			return nil, err
+		}
+		e, err := dateparse.ParseAny(ev.End)
+		if err != nil {
+			return nil, err
+		}
 		if (start.Before(s) || start == s) && (e.Before(end) || end == e) {
 			res = append(res, ev)
 		}
@@ -123,13 +127,19 @@ func (db *SQLDb) UpdateEvent(ev in.Event, id uuid.UUID) error {
 	if _, err := db.GetEventByUUID(id); err != nil {
 		return ErrEventNotFound
 	}
-	start, _ := dateparse.ParseAny(ev.Start)
-	end, _ := dateparse.ParseAny(ev.End)
+	start, err := dateparse.ParseAny(ev.Start)
+	if err != nil {
+		return err
+	}
+	end, err := dateparse.ParseAny(ev.End)
+	if err != nil {
+		return err
+	}
 	if err := db.validateTime(start, end, id.String()); err != nil {
 		return err
 	}
 	ev.UUID = id.String()
-	_, err := db.base.NamedExec(`UPDATE events SET title=:title, start=:start, end=:end, description=:description, ownerid=:ownerid, notifyin=:notifyin WHERE :uuid = :uuid`, ev)
+	_, err = db.base.NamedExec(`UPDATE events SET title=:title, start=:start, end=:end, description=:description, ownerid=:ownerid, notifyin=:notifyin WHERE :uuid = :uuid`, ev)
 	return err
 }
 

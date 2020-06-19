@@ -45,10 +45,15 @@ func (im *InMemDB) validateTime(start time.Time, end time.Time, uuidExcept strin
 		return ErrTooShortEvent
 	}
 
-	var s, e time.Time
 	for _, ev := range im.base {
-		s, _ = dateparse.ParseAny(ev.Start)
-		e, _ = dateparse.ParseAny(ev.End)
+		s, err := dateparse.ParseAny(ev.Start)
+		if err != nil {
+			return err
+		}
+		e, err := dateparse.ParseAny(ev.End)
+		if err != nil {
+			return err
+		}
 		if !((s.Before(end) && e.Before(start)) || (start.Before(e) && end.Before(s))) {
 			if ev.UUID != uuidExcept {
 				return ErrDateBusy
@@ -60,8 +65,14 @@ func (im *InMemDB) validateTime(start time.Time, end time.Time, uuidExcept strin
 
 func (im *InMemDB) CreateEvent(ev in.Event) (uuid.UUID, error) {
 	id := uuid.New()
-	start, _ := dateparse.ParseAny(ev.Start)
-	end, _ := dateparse.ParseAny(ev.End)
+	start, err := dateparse.ParseAny(ev.Start)
+	if err != nil {
+		return id, err
+	}
+	end, err := dateparse.ParseAny(ev.End)
+	if err != nil {
+		return id, err
+	}
 	if err := im.validateTime(start, end, ""); err != nil {
 		return id, err
 	}
@@ -73,10 +84,15 @@ func (im *InMemDB) CreateEvent(ev in.Event) (uuid.UUID, error) {
 func (im *InMemDB) GetFromInterval(start time.Time, delta time.Duration) ([]in.Event, error) {
 	evs := []in.Event{}
 	end := start.Add(delta)
-	var s, e time.Time
 	for _, ev := range im.base {
-		s, _ = dateparse.ParseAny(ev.Start)
-		e, _ = dateparse.ParseAny(ev.End)
+		s, err := dateparse.ParseAny(ev.Start)
+		if err != nil {
+			return nil, err
+		}
+		e, err := dateparse.ParseAny(ev.End)
+		if err != nil {
+			return nil, err
+		}
 		if (start.Before(s) || start == s) && (e.Before(end) || end == e) {
 			evs = append(evs, ev)
 		}
@@ -88,11 +104,16 @@ func (im *InMemDB) GetFromInterval(start time.Time, delta time.Duration) ([]in.E
 }
 
 func (im *InMemDB) UpdateEvent(newEvent in.Event, uuid uuid.UUID) error {
-	var s, e time.Time
 	for i, ev := range im.base {
 		if ev.UUID == uuid.String() {
-			s, _ = dateparse.ParseAny(newEvent.Start)
-			e, _ = dateparse.ParseAny(newEvent.End)
+			s, err := dateparse.ParseAny(newEvent.Start)
+			if err != nil {
+				return err
+			}
+			e, _ := dateparse.ParseAny(newEvent.End)
+			if err != nil {
+				return err
+			}
 			if err := im.validateTime(s, e, uuid.String()); err != nil {
 				return err
 			}

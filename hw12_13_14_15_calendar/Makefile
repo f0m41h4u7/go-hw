@@ -17,4 +17,7 @@ lint:
 clean:
 	rm $(CMD)
 
-.PHONY: build run test lint clean
+migrate:
+	goose -dir migrations/ mysql "qwerty:pswd@(127.0.0.1:1338)/default?charset=utf8&parseTime=True&loc=Local" up
+
+.PHONY: build run test lint clean migrate
