@@ -13,8 +13,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var schema = "CREATE TABLE IF NOT EXISTS events (uuid TEXT, title TEXT, start TEXT, end TEXT, description TEXT, ownerid TEXT, notifyin TEXT);"
-
 type SQLDb struct {
 	base *sqlx.DB
 }
@@ -23,11 +21,7 @@ func NewSQLDatabase() (cl.StorageInterface, error) {
 	var err error
 	var DB SQLDb
 	DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		return &DB, err
-	}
-	DB.base.MustExec(schema)
-	return &DB, nil
+	return &DB, err
 }
 
 func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string) error {
