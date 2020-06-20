@@ -1,0 +1,18 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 1337
+  },
+  "logger": {
+    "file": "log.out",
+    "level": "debug"
+  },
+  "sql": "true",
+  "database": {
+    "name": "default",
+    "host": "127.0.0.1",
+    "port": 1338,
+    "user": "qwerty",
+    "password": "pswd"
+  }
+}
