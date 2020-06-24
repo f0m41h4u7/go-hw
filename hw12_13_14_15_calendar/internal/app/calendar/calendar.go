@@ -23,15 +23,15 @@ func (c *Calendar) CreateEvent(ev internal.Event) (uuid.UUID, error) {
 	return c.Storage.CreateEvent(ev)
 }
 
-func (c *Calendar) GetEventsFromDay(date time.Time) ([]internal.Event, error) {
+func (c *Calendar) GetEventsForDay(date time.Time) ([]internal.Event, error) {
 	return c.Storage.GetFromInterval(date, 24*time.Hour)
 }
 
-func (c *Calendar) GetEventsFromWeek(date time.Time) ([]internal.Event, error) {
+func (c *Calendar) GetEventsForWeek(date time.Time) ([]internal.Event, error) {
 	return c.Storage.GetFromInterval(date, 7*24*time.Hour)
 }
 
-func (c *Calendar) GetEventsFromMonth(date time.Time) ([]internal.Event, error) {
+func (c *Calendar) GetEventsForMonth(date time.Time) ([]internal.Event, error) {
 	return c.Storage.GetFromInterval(date, 30*7*24*time.Hour)
 }
 

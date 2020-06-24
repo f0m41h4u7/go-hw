@@ -1,0 +1,42 @@
+syntax = "proto3";
+option go_package=".;grpcspec";
+
+message Event {
+  string uuid = 1;
+  string title = 2;
+  string start = 3;
+  string end = 4;
+  string description = 5;
+  string ownerid = 6;
+  string notifyin = 7;
+}
+
+message Empty {
+
+}
+
+message EventList {
+  repeated Event event = 1;
+}
+
+message Id {
+  string id = 1;
+}
+
+message UpdateRequest {
+  string id = 1;
+  Event event = 2;
+}
+
+message Date {
+  string Date = 1;
+}
+
+service Calendar {
+  rpc Create(Event) returns (Id) {};
+  rpc Update(UpdateRequest) returns (Empty) {};
+  rpc Delete(Id) returns (Empty) {};
+  rpc GetForDay(Date) returns (EventList) {};
+  rpc GetForWeek(Date) returns (EventList) {};
+  rpc GetForMonth(Date) returns (EventList) {};
+}

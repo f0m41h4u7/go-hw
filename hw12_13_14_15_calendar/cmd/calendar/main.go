@@ -1,17 +1,17 @@
-package cmd
+package main
 
 import (
 	"flag"
 	"log"
 
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/db"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/api/grpcapi"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/api/httpapi"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar/httpserver"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/logger"
 )
 
-//nolint:unused
 var (
 	cfgFile string
 	app     calendar.Calendar
@@ -21,7 +21,6 @@ func init() {
 	flag.StringVar(&cfgFile, "config", "", "path to config file")
 }
 
-//nolint:deadcode,unused
 func main() {
 	flag.Parse()
 
@@ -51,5 +50,6 @@ func main() {
 		Storage: st,
 	}
 
-	httpserver.StartServer()
+	go httpapi.StartServer(&app)
+	grpcapi.StartServer(&app)
 }

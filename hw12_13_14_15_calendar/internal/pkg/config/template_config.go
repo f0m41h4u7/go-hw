@@ -21,7 +21,11 @@ const (
 )
 
 type Config struct {
-	Server struct {
+	Httpserver struct {
+		Host string
+		Port string
+	}
+	Grpcserver struct {
 		Host string
 		Port string
 	}
@@ -40,7 +44,11 @@ type Config struct {
 }
 
 func (c Config) validate() error {
-	if _, err := net.LookupHost(c.Server.Host); err != nil {
+	if _, err := net.LookupHost(c.Httpserver.Host); err != nil {
+		return ErrWrongServerHost
+	}
+
+	if _, err := net.LookupHost(c.Grpcserver.Host); err != nil {
 		return ErrWrongServerHost
 	}
 

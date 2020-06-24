@@ -1,7 +1,11 @@
 {
-  "server": {
+  "httpserver": {
     "host": "qqwqwq",
     "port": 1337
+  },
+  "grpcserver": {
+    "host": "127.0.0.1",
+    "port": 1339
   },
   "logger": {
     "file": "log.out",

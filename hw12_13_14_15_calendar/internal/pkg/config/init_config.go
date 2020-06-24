@@ -19,7 +19,7 @@ func InitConfig(cfgFile string) error {
 	} else {
 		pwd, _ := os.Getwd()
 		fmt.Println(pwd)
-		viper.SetConfigName("config")
+		viper.SetConfigName("configs/config")
 		viper.AddConfigPath(pwd)
 		viper.AutomaticEnv()
 		viper.SetConfigType("json")
