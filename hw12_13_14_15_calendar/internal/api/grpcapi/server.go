@@ -5,7 +5,7 @@ import (
 
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/api/grpcspec"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -15,7 +15,7 @@ var app *calendar.Calendar
 
 //go:generate protoc --proto_path=../../../api/grpcspec --go_out=plugins=grpc:../../../api/grpcspec ../../../api/grpcspec/event.proto
 type Server struct {
-	Grpc *grpc.Server
+	grpc *grpc.Server
 }
 
 func InitServer(cl *calendar.Calendar) *Server {
@@ -23,20 +23,19 @@ func InitServer(cl *calendar.Calendar) *Server {
 	s := &Server{}
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpc_zap.UnaryServerInterceptor(zap.L())))
 	grpcspec.RegisterCalendarServer(grpcServer, s)
-	s.Grpc = grpcServer
+	s.grpc = grpcServer
 	return s
 }
 
-func StartServer(cl *calendar.Calendar) {
-	s := InitServer(cl)
-	lis, err := net.Listen("tcp", net.JoinHostPort(config.Conf.Grpcserver.Host, config.Conf.Grpcserver.Port))
+func (s *Server) Start() error {
+	lis, err := net.Listen("tcp", net.JoinHostPort(config.Conf.GRPCServer.Host, config.Conf.GRPCServer.Port))
 	if err != nil {
-		zap.L().Error("failed to run grpc server", zap.Error(err))
-		return
+		return err
 	}
-	err = s.Grpc.Serve(lis)
-	if err != nil {
-		zap.L().Error("failed to run grpc server", zap.Error(err))
-		return
-	}
+	err = s.grpc.Serve(lis)
+	return err
+}
+
+func (s *Server) Stop() {
+	s.grpc.GracefulStop()
 }

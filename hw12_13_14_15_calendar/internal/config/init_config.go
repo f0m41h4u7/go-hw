@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	Conf           Config
-	ErrWrongConfig = errors.New("cannot parse config file")
+	Conf                 Config
+	ErrCannotReadConfig  = errors.New("cannot read config file")
+	ErrCannotParseConfig = errors.New("cannot parse config file")
 )
 
 func InitConfig(cfgFile string) error {
@@ -26,11 +27,11 @@ func InitConfig(cfgFile string) error {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		return ErrWrongConfig
+		return ErrCannotReadConfig
 	}
 
 	if err := viper.Unmarshal(&Conf); err != nil {
-		return ErrWrongConfig
+		return ErrCannotParseConfig
 	}
 	return Conf.validate()
 }

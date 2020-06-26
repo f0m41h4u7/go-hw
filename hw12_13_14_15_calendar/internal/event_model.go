@@ -5,11 +5,11 @@ type EventList []Event
 
 //easyjson:json
 type Event struct {
-	UUID        string `db:"uuid" json:"uuid"`
-	Title       string `db:"title" json:"title"`
-	Start       string `db:"start" json:"start"`
-	End         string `db:"end" json:"end"`
-	Description string `db:"description" json:"description"`
-	OwnerID     string `db:"ownerid" json:"ownerid"`
-	NotifyIn    string `db:"notifyin" json:"notifyin"`
+	UUID        string `json:"uuid"`
+	Title       string `json:"title"`
+	Start       string `json:"start"`
+	End         string `json:"end"`
+	Description string `json:"description"`
+	OwnerID     string `json:"owner_id"`
+	NotifyIn    string `json:"notify_in"`
 }

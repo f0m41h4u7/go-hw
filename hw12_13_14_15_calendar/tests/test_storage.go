@@ -13,7 +13,7 @@ var TestEvent = in.Event{
 	End:         time.Date(2023, 3, 11, 9, 0, 0, 0, time.UTC).Add(3 * time.Hour).String(),
 	Description: "test",
 	OwnerID:     uuid.New().String(),
-	NotifyIn:    "1h",
+	NotifyIn:    "3600000000000",
 }
 
 type TestStorage struct {

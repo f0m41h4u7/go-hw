@@ -9,6 +9,7 @@ package grpcspec
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -34,13 +35,13 @@ type Event struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uuid        string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
-	Title       string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Start       string `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
-	End         string `protobuf:"bytes,4,opt,name=end,proto3" json:"end,omitempty"`
-	Description string `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Ownerid     string `protobuf:"bytes,6,opt,name=ownerid,proto3" json:"ownerid,omitempty"`
-	Notifyin    string `protobuf:"bytes,7,opt,name=notifyin,proto3" json:"notifyin,omitempty"`
+	Uuid        string               `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	Title       string               `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Start       *timestamp.Timestamp `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
+	End         *timestamp.Timestamp `protobuf:"bytes,4,opt,name=end,proto3" json:"end,omitempty"`
+	Description string               `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Ownerid     string               `protobuf:"bytes,6,opt,name=ownerid,proto3" json:"ownerid,omitempty"`
+	Notifyin    int64                `protobuf:"varint,7,opt,name=notifyin,proto3" json:"notifyin,omitempty"`
 }
 
 func (x *Event) Reset() {
@@ -89,18 +90,18 @@ func (x *Event) GetTitle() string {
 	return ""
 }
 
-func (x *Event) GetStart() string {
+func (x *Event) GetStart() *timestamp.Timestamp {
 	if x != nil {
 		return x.Start
 	}
-	return ""
+	return nil
 }
 
-func (x *Event) GetEnd() string {
+func (x *Event) GetEnd() *timestamp.Timestamp {
 	if x != nil {
 		return x.End
 	}
-	return ""
+	return nil
 }
 
 func (x *Event) GetDescription() string {
@@ -117,21 +118,23 @@ func (x *Event) GetOwnerid() string {
 	return ""
 }
 
-func (x *Event) GetNotifyin() string {
+func (x *Event) GetNotifyin() int64 {
 	if x != nil {
 		return x.Notifyin
 	}
-	return ""
+	return 0
 }
 
-type Empty struct {
+type CreateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Event *Event `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 }
 
-func (x *Empty) Reset() {
-	*x = Empty{}
+func (x *CreateRequest) Reset() {
+	*x = CreateRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_event_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -139,13 +142,13 @@ func (x *Empty) Reset() {
 	}
 }
 
-func (x *Empty) String() string {
+func (x *CreateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Empty) ProtoMessage() {}
+func (*CreateRequest) ProtoMessage() {}
 
-func (x *Empty) ProtoReflect() protoreflect.Message {
+func (x *CreateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_event_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -157,21 +160,28 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
-func (*Empty) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateRequest.ProtoReflect.Descriptor instead.
+func (*CreateRequest) Descriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{1}
 }
 
-type EventList struct {
+func (x *CreateRequest) GetEvent() *Event {
+	if x != nil {
+		return x.Event
+	}
+	return nil
+}
+
+type CreateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Event []*Event `protobuf:"bytes,1,rep,name=event,proto3" json:"event,omitempty"`
+	Uuid string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 }
 
-func (x *EventList) Reset() {
-	*x = EventList{}
+func (x *CreateResponse) Reset() {
+	*x = CreateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_event_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -179,13 +189,13 @@ func (x *EventList) Reset() {
 	}
 }
 
-func (x *EventList) String() string {
+func (x *CreateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventList) ProtoMessage() {}
+func (*CreateResponse) ProtoMessage() {}
 
-func (x *EventList) ProtoReflect() protoreflect.Message {
+func (x *CreateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_event_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -197,61 +207,14 @@ func (x *EventList) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EventList.ProtoReflect.Descriptor instead.
-func (*EventList) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateResponse.ProtoReflect.Descriptor instead.
+func (*CreateResponse) Descriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *EventList) GetEvent() []*Event {
+func (x *CreateResponse) GetUuid() string {
 	if x != nil {
-		return x.Event
-	}
-	return nil
-}
-
-type Id struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *Id) Reset() {
-	*x = Id{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Id) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Id) ProtoMessage() {}
-
-func (x *Id) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Id.ProtoReflect.Descriptor instead.
-func (*Id) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *Id) GetId() string {
-	if x != nil {
-		return x.Id
+		return x.Uuid
 	}
 	return ""
 }
@@ -261,14 +224,14 @@ type UpdateRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id    string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Uuid  string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	Event *Event `protobuf:"bytes,2,opt,name=event,proto3" json:"event,omitempty"`
 }
 
 func (x *UpdateRequest) Reset() {
 	*x = UpdateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_event_proto_msgTypes[4]
+		mi := &file_event_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -281,7 +244,7 @@ func (x *UpdateRequest) String() string {
 func (*UpdateRequest) ProtoMessage() {}
 
 func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_event_proto_msgTypes[4]
+	mi := &file_event_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -294,12 +257,12 @@ func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRequest) Descriptor() ([]byte, []int) {
-	return file_event_proto_rawDescGZIP(), []int{4}
+	return file_event_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *UpdateRequest) GetId() string {
+func (x *UpdateRequest) GetUuid() string {
 	if x != nil {
-		return x.Id
+		return x.Uuid
 	}
 	return ""
 }
@@ -311,16 +274,54 @@ func (x *UpdateRequest) GetEvent() *Event {
 	return nil
 }
 
-type Date struct {
+type UpdateResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *UpdateResponse) Reset() {
+	*x = UpdateResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_event_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateResponse) ProtoMessage() {}
+
+func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
+func (*UpdateResponse) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{4}
+}
+
+type DeleteRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Date string `protobuf:"bytes,1,opt,name=Date,proto3" json:"Date,omitempty"`
+	Uuid string `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 }
 
-func (x *Date) Reset() {
-	*x = Date{}
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_event_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -328,13 +329,13 @@ func (x *Date) Reset() {
 	}
 }
 
-func (x *Date) String() string {
+func (x *DeleteRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Date) ProtoMessage() {}
+func (*DeleteRequest) ProtoMessage() {}
 
-func (x *Date) ProtoReflect() protoreflect.Message {
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_event_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -346,58 +347,211 @@ func (x *Date) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Date.ProtoReflect.Descriptor instead.
-func (*Date) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
 	return file_event_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *Date) GetDate() string {
+func (x *DeleteRequest) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+type DeleteResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *DeleteResponse) Reset() {
+	*x = DeleteResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_event_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteResponse) ProtoMessage() {}
+
+func (x *DeleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteResponse.ProtoReflect.Descriptor instead.
+func (*DeleteResponse) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{6}
+}
+
+type GetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Date *timestamp.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+}
+
+func (x *GetRequest) Reset() {
+	*x = GetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_event_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequest) ProtoMessage() {}
+
+func (x *GetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
+func (*GetRequest) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetRequest) GetDate() *timestamp.Timestamp {
 	if x != nil {
 		return x.Date
 	}
-	return ""
+	return nil
+}
+
+type GetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Event []*Event `protobuf:"bytes,1,rep,name=event,proto3" json:"event,omitempty"`
+}
+
+func (x *GetResponse) Reset() {
+	*x = GetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_event_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetResponse) ProtoMessage() {}
+
+func (x *GetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_event_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
+func (*GetResponse) Descriptor() ([]byte, []int) {
+	return file_event_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetResponse) GetEvent() []*Event {
+	if x != nil {
+		return x.Event
+	}
+	return nil
 }
 
 var File_event_proto protoreflect.FileDescriptor
 
 var file_event_proto_rawDesc = []byte{
-	0x0a, 0x0b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb1, 0x01,
-	0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x74,
-	0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74, 0x6c,
-	0x65, 0x12, 0x14, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x65, 0x6e, 0x64, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x65, 0x6e, 0x64, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73,
-	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
-	0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x6f,
-	0x77, 0x6e, 0x65, 0x72, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x77,
-	0x6e, 0x65, 0x72, 0x69, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x69,
-	0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x69,
-	0x6e, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x29, 0x0a, 0x09, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x05,
-	0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x14, 0x0a, 0x02, 0x49, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x3d, 0x0a, 0x0d, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1c, 0x0a, 0x05,
-	0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x1a, 0x0a, 0x04, 0x44, 0x61,
-	0x74, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x44, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x44, 0x61, 0x74, 0x65, 0x32, 0xc9, 0x01, 0x0a, 0x08, 0x43, 0x61, 0x6c, 0x65, 0x6e,
-	0x64, 0x61, 0x72, 0x12, 0x17, 0x0a, 0x06, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x12, 0x06, 0x2e,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x1a, 0x03, 0x2e, 0x49, 0x64, 0x22, 0x00, 0x12, 0x22, 0x0a, 0x06,
-	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x0e, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x06, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00,
-	0x12, 0x17, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x03, 0x2e, 0x49, 0x64, 0x1a,
-	0x06, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x20, 0x0a, 0x09, 0x47, 0x65, 0x74,
-	0x46, 0x6f, 0x72, 0x44, 0x61, 0x79, 0x12, 0x05, 0x2e, 0x44, 0x61, 0x74, 0x65, 0x1a, 0x0a, 0x2e,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x22, 0x00, 0x12, 0x21, 0x0a, 0x0a, 0x47,
-	0x65, 0x74, 0x46, 0x6f, 0x72, 0x57, 0x65, 0x65, 0x6b, 0x12, 0x05, 0x2e, 0x44, 0x61, 0x74, 0x65,
-	0x1a, 0x0a, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x22, 0x00, 0x12, 0x22,
-	0x0a, 0x0b, 0x47, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x12, 0x05, 0x2e,
-	0x44, 0x61, 0x74, 0x65, 0x1a, 0x0a, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74,
-	0x22, 0x00, 0x42, 0x0c, 0x5a, 0x0a, 0x2e, 0x3b, 0x67, 0x72, 0x70, 0x63, 0x73, 0x70, 0x65, 0x63,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0a, 0x0b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1f, 0x67,
+	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74,
+	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe9,
+	0x01, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05,
+	0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74,
+	0x6c, 0x65, 0x12, 0x30, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x72, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x05, 0x73,
+	0x74, 0x61, 0x72, 0x74, 0x12, 0x2c, 0x0a, 0x03, 0x65, 0x6e, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x03, 0x65,
+	0x6e, 0x64, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x69, 0x64, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x69, 0x64, 0x12, 0x1a,
+	0x0a, 0x08, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x69, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x08, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x69, 0x6e, 0x22, 0x2d, 0x0a, 0x0d, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x05, 0x65,
+	0x76, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x24, 0x0a, 0x0e, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x75,
+	0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x22,
+	0x41, 0x0a, 0x0d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x75, 0x75, 0x69, 0x64, 0x12, 0x1c, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65,
+	0x6e, 0x74, 0x22, 0x10, 0x0a, 0x0e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x23, 0x0a, 0x0d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x22, 0x10, 0x0a, 0x0e, 0x44, 0x65, 0x6c,
+	0x65, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3c, 0x0a, 0x0a, 0x47,
+	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2e, 0x0a, 0x04, 0x64, 0x61, 0x74,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x52, 0x04, 0x64, 0x61, 0x74, 0x65, 0x22, 0x2b, 0x0a, 0x0b, 0x47, 0x65, 0x74,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e,
+	0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52,
+	0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0x92, 0x02, 0x0a, 0x08, 0x43, 0x61, 0x6c, 0x65, 0x6e,
+	0x64, 0x61, 0x72, 0x12, 0x2b, 0x0a, 0x06, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x12, 0x0e, 0x2e,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
+	0x12, 0x2b, 0x0a, 0x06, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x0e, 0x2e, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x2b, 0x0a,
+	0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x0e, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x28, 0x0a, 0x09, 0x47, 0x65,
+	0x74, 0x46, 0x6f, 0x72, 0x44, 0x61, 0x79, 0x12, 0x0b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x22, 0x00, 0x12, 0x29, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x57, 0x65,
+	0x65, 0x6b, 0x12, 0x0b, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x0c, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12,
+	0x2a, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x12, 0x0b,
+	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x47, 0x65,
+	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0c, 0x5a, 0x0a, 0x2e,
+	0x3b, 0x67, 0x72, 0x70, 0x63, 0x73, 0x70, 0x65, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -412,35 +566,43 @@ func file_event_proto_rawDescGZIP() []byte {
 	return file_event_proto_rawDescData
 }
 
-var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_event_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_event_proto_goTypes = []interface{}{
-	(*Event)(nil),         // 0: Event
-	(*Empty)(nil),         // 1: Empty
-	(*EventList)(nil),     // 2: EventList
-	(*Id)(nil),            // 3: Id
-	(*UpdateRequest)(nil), // 4: UpdateRequest
-	(*Date)(nil),          // 5: Date
+	(*Event)(nil),               // 0: Event
+	(*CreateRequest)(nil),       // 1: CreateRequest
+	(*CreateResponse)(nil),      // 2: CreateResponse
+	(*UpdateRequest)(nil),       // 3: UpdateRequest
+	(*UpdateResponse)(nil),      // 4: UpdateResponse
+	(*DeleteRequest)(nil),       // 5: DeleteRequest
+	(*DeleteResponse)(nil),      // 6: DeleteResponse
+	(*GetRequest)(nil),          // 7: GetRequest
+	(*GetResponse)(nil),         // 8: GetResponse
+	(*timestamp.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_event_proto_depIdxs = []int32{
-	0, // 0: EventList.event:type_name -> Event
-	0, // 1: UpdateRequest.event:type_name -> Event
-	0, // 2: Calendar.Create:input_type -> Event
-	4, // 3: Calendar.Update:input_type -> UpdateRequest
-	3, // 4: Calendar.Delete:input_type -> Id
-	5, // 5: Calendar.GetForDay:input_type -> Date
-	5, // 6: Calendar.GetForWeek:input_type -> Date
-	5, // 7: Calendar.GetForMonth:input_type -> Date
-	3, // 8: Calendar.Create:output_type -> Id
-	1, // 9: Calendar.Update:output_type -> Empty
-	1, // 10: Calendar.Delete:output_type -> Empty
-	2, // 11: Calendar.GetForDay:output_type -> EventList
-	2, // 12: Calendar.GetForWeek:output_type -> EventList
-	2, // 13: Calendar.GetForMonth:output_type -> EventList
-	8, // [8:14] is the sub-list for method output_type
-	2, // [2:8] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	9,  // 0: Event.start:type_name -> google.protobuf.Timestamp
+	9,  // 1: Event.end:type_name -> google.protobuf.Timestamp
+	0,  // 2: CreateRequest.event:type_name -> Event
+	0,  // 3: UpdateRequest.event:type_name -> Event
+	9,  // 4: GetRequest.date:type_name -> google.protobuf.Timestamp
+	0,  // 5: GetResponse.event:type_name -> Event
+	1,  // 6: Calendar.Create:input_type -> CreateRequest
+	3,  // 7: Calendar.Update:input_type -> UpdateRequest
+	5,  // 8: Calendar.Delete:input_type -> DeleteRequest
+	7,  // 9: Calendar.GetForDay:input_type -> GetRequest
+	7,  // 10: Calendar.GetForWeek:input_type -> GetRequest
+	7,  // 11: Calendar.GetForMonth:input_type -> GetRequest
+	2,  // 12: Calendar.Create:output_type -> CreateResponse
+	4,  // 13: Calendar.Update:output_type -> UpdateResponse
+	6,  // 14: Calendar.Delete:output_type -> DeleteResponse
+	8,  // 15: Calendar.GetForDay:output_type -> GetResponse
+	8,  // 16: Calendar.GetForWeek:output_type -> GetResponse
+	8,  // 17: Calendar.GetForMonth:output_type -> GetResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_event_proto_init() }
@@ -462,7 +624,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Empty); i {
+			switch v := v.(*CreateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -474,7 +636,7 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventList); i {
+			switch v := v.(*CreateResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -486,18 +648,6 @@ func file_event_proto_init() {
 			}
 		}
 		file_event_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Id); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_event_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateRequest); i {
 			case 0:
 				return &v.state
@@ -509,8 +659,56 @@ func file_event_proto_init() {
 				return nil
 			}
 		}
+		file_event_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_event_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Date); i {
+			switch v := v.(*DeleteRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_event_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_event_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_event_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -528,7 +726,7 @@ func file_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_event_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -554,12 +752,12 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CalendarClient interface {
-	Create(ctx context.Context, in *Event, opts ...grpc.CallOption) (*Id, error)
-	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*Empty, error)
-	Delete(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error)
-	GetForDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error)
-	GetForWeek(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error)
-	GetForMonth(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	GetForDay(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	GetForWeek(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	GetForMonth(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 }
 
 type calendarClient struct {
@@ -570,8 +768,8 @@ func NewCalendarClient(cc grpc.ClientConnInterface) CalendarClient {
 	return &calendarClient{cc}
 }
 
-func (c *calendarClient) Create(ctx context.Context, in *Event, opts ...grpc.CallOption) (*Id, error) {
-	out := new(Id)
+func (c *calendarClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
+	out := new(CreateResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -579,8 +777,8 @@ func (c *calendarClient) Create(ctx context.Context, in *Event, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *calendarClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *calendarClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error) {
+	out := new(UpdateResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -588,8 +786,8 @@ func (c *calendarClient) Update(ctx context.Context, in *UpdateRequest, opts ...
 	return out, nil
 }
 
-func (c *calendarClient) Delete(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *calendarClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	out := new(DeleteResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -597,8 +795,8 @@ func (c *calendarClient) Delete(ctx context.Context, in *Id, opts ...grpc.CallOp
 	return out, nil
 }
 
-func (c *calendarClient) GetForDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error) {
-	out := new(EventList)
+func (c *calendarClient) GetForDay(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/GetForDay", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -606,8 +804,8 @@ func (c *calendarClient) GetForDay(ctx context.Context, in *Date, opts ...grpc.C
 	return out, nil
 }
 
-func (c *calendarClient) GetForWeek(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error) {
-	out := new(EventList)
+func (c *calendarClient) GetForWeek(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/GetForWeek", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -615,8 +813,8 @@ func (c *calendarClient) GetForWeek(ctx context.Context, in *Date, opts ...grpc.
 	return out, nil
 }
 
-func (c *calendarClient) GetForMonth(ctx context.Context, in *Date, opts ...grpc.CallOption) (*EventList, error) {
-	out := new(EventList)
+func (c *calendarClient) GetForMonth(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, "/Calendar/GetForMonth", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -626,34 +824,34 @@ func (c *calendarClient) GetForMonth(ctx context.Context, in *Date, opts ...grpc
 
 // CalendarServer is the server API for Calendar service.
 type CalendarServer interface {
-	Create(context.Context, *Event) (*Id, error)
-	Update(context.Context, *UpdateRequest) (*Empty, error)
-	Delete(context.Context, *Id) (*Empty, error)
-	GetForDay(context.Context, *Date) (*EventList, error)
-	GetForWeek(context.Context, *Date) (*EventList, error)
-	GetForMonth(context.Context, *Date) (*EventList, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	GetForDay(context.Context, *GetRequest) (*GetResponse, error)
+	GetForWeek(context.Context, *GetRequest) (*GetResponse, error)
+	GetForMonth(context.Context, *GetRequest) (*GetResponse, error)
 }
 
 // UnimplementedCalendarServer can be embedded to have forward compatible implementations.
 type UnimplementedCalendarServer struct {
 }
 
-func (*UnimplementedCalendarServer) Create(context.Context, *Event) (*Id, error) {
+func (*UnimplementedCalendarServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (*UnimplementedCalendarServer) Update(context.Context, *UpdateRequest) (*Empty, error) {
+func (*UnimplementedCalendarServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (*UnimplementedCalendarServer) Delete(context.Context, *Id) (*Empty, error) {
+func (*UnimplementedCalendarServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
-func (*UnimplementedCalendarServer) GetForDay(context.Context, *Date) (*EventList, error) {
+func (*UnimplementedCalendarServer) GetForDay(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForDay not implemented")
 }
-func (*UnimplementedCalendarServer) GetForWeek(context.Context, *Date) (*EventList, error) {
+func (*UnimplementedCalendarServer) GetForWeek(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForWeek not implemented")
 }
-func (*UnimplementedCalendarServer) GetForMonth(context.Context, *Date) (*EventList, error) {
+func (*UnimplementedCalendarServer) GetForMonth(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForMonth not implemented")
 }
 
@@ -662,7 +860,7 @@ func RegisterCalendarServer(s *grpc.Server, srv CalendarServer) {
 }
 
 func _Calendar_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Event)
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -674,7 +872,7 @@ func _Calendar_Create_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/Calendar/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalendarServer).Create(ctx, req.(*Event))
+		return srv.(CalendarServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -698,7 +896,7 @@ func _Calendar_Update_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Calendar_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Id)
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -710,13 +908,13 @@ func _Calendar_Delete_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/Calendar/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalendarServer).Delete(ctx, req.(*Id))
+		return srv.(CalendarServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Calendar_GetForDay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Date)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -728,13 +926,13 @@ func _Calendar_GetForDay_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/Calendar/GetForDay",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalendarServer).GetForDay(ctx, req.(*Date))
+		return srv.(CalendarServer).GetForDay(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Calendar_GetForWeek_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Date)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -746,13 +944,13 @@ func _Calendar_GetForWeek_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/Calendar/GetForWeek",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalendarServer).GetForWeek(ctx, req.(*Date))
+		return srv.(CalendarServer).GetForWeek(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Calendar_GetForMonth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Date)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -764,7 +962,7 @@ func _Calendar_GetForMonth_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/Calendar/GetForMonth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalendarServer).GetForMonth(ctx, req.(*Date))
+		return srv.(CalendarServer).GetForMonth(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

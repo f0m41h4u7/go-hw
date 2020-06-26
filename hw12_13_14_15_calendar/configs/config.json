@@ -1,9 +1,9 @@
 {
-  "httpserver": {
+  "HTTPServer": {
     "host": "127.0.0.1",
     "port": 1337
   },
-  "grpcserver": {
+  "GRPCServer": {
     "host": "127.0.0.1",
     "port": 1339
   },
@@ -11,12 +11,5 @@
     "file": "log.out",
     "level": "debug"
   },
-  "sql": "true",
-  "database": {
-    "name": "default",
-    "host": "127.0.0.1",
-    "port": 1338,
-    "user": "qwerty",
-    "password": "pswd"
-  }
+  "sql": "false"
 }

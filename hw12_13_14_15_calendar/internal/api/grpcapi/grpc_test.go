@@ -10,9 +10,10 @@ import (
 
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/api/grpcspec"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/logger"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/logger"
 	. "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/tests"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -20,38 +21,20 @@ import (
 )
 
 var (
-	cl calendar.Calendar
-	st TestStorage
+	cl        calendar.Calendar
+	st        TestStorage
+	grpcEvent grpcspec.Event
+	lis       *bufconn.Listener
 
-	lis *bufconn.Listener
-
-	date      = time.Date(2023, 3, 11, 9, 0, 0, 0, time.UTC)
-	GrpcEvent = grpcspec.Event{
-		Title:       "cool event",
-		Start:       date.String(),
-		End:         date.Add(3 * time.Hour).String(),
-		Description: "test",
-		Ownerid:     uuid.New().String(),
-		Notifyin:    "1h",
-	}
-	UpdReq = grpcspec.UpdateRequest{
-		Id:    uuid.New().String(),
-		Event: &GrpcEvent,
-	}
-	DelID = grpcspec.Id{
-		Id: uuid.New().String(),
-	}
-	GetReq = grpcspec.Date{
-		Date: "2023-03-11T00:00:00",
-	}
+	date = time.Date(2023, 3, 11, 9, 0, 0, 0, time.UTC)
 )
 
 const bufSize = 1024 * 1024
 
-func InitTest(cl *calendar.Calendar) {
+func initTest(cl *calendar.Calendar) {
 	lis = bufconn.Listen(bufSize)
 	go func() {
-		if err := InitServer(cl).Grpc.Serve(lis); err != nil {
+		if err := InitServer(cl).grpc.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
 		}
 	}()
@@ -66,7 +49,24 @@ func TestCreate(t *testing.T) {
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
-	InitTest(&cl)
+	initTest(&cl)
+
+	start, err := ptypes.TimestampProto(date)
+	require.Nil(t, err)
+	end, err := ptypes.TimestampProto(date.Add(3 * time.Hour))
+	require.Nil(t, err)
+	grpcEvent = grpcspec.Event{
+		Title:       "cool event",
+		Start:       start,
+		End:         end,
+		Description: "test",
+		Ownerid:     uuid.New().String(),
+		Notifyin:    time.Hour.Milliseconds(),
+	}
+
+	crReq := grpcspec.CreateRequest{
+		Event: &grpcEvent,
+	}
 
 	t.Run("simple", func(t *testing.T) {
 		ctx := context.Background()
@@ -75,16 +75,16 @@ func TestCreate(t *testing.T) {
 		defer conn.Close()
 
 		client := grpcspec.NewCalendarClient(conn)
-		resp, err := client.Create(ctx, &GrpcEvent)
+		resp, err := client.Create(ctx, &crReq)
 		require.Nil(t, err)
-		_, err = uuid.Parse(resp.Id)
+		_, err = uuid.Parse(resp.Uuid)
 		require.Nil(t, err)
 	})
 
 	t.Run("error in db", func(t *testing.T) {
 		st = TestStorage{Err: errors.New("some db error")}
 		cl = calendar.NewCalendar(&st)
-		InitTest(&cl)
+		initTest(&cl)
 
 		ctx := context.Background()
 		conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -92,7 +92,7 @@ func TestCreate(t *testing.T) {
 		defer conn.Close()
 
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.Create(ctx, &GrpcEvent)
+		_, err = client.Create(ctx, &crReq)
 		require.NotNil(t, err)
 	})
 }
@@ -102,7 +102,11 @@ func TestUpdate(t *testing.T) {
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
-	InitTest(&cl)
+	initTest(&cl)
+	updReq := grpcspec.UpdateRequest{
+		Uuid:  uuid.New().String(),
+		Event: &grpcEvent,
+	}
 
 	t.Run("simple", func(t *testing.T) {
 		ctx := context.Background()
@@ -111,7 +115,7 @@ func TestUpdate(t *testing.T) {
 		defer conn.Close()
 
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.Update(ctx, &UpdReq)
+		_, err = client.Update(ctx, &updReq)
 		require.Nil(t, err)
 	})
 
@@ -121,9 +125,9 @@ func TestUpdate(t *testing.T) {
 		require.Nil(t, err)
 		defer conn.Close()
 
-		UpdReq.Id = "deadbeef"
+		updReq.Uuid = "deadbeef"
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.Update(ctx, &UpdReq)
+		_, err = client.Update(ctx, &updReq)
 		require.NotNil(t, err)
 	})
 }
@@ -131,7 +135,10 @@ func TestUpdate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	_ = config.InitConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
-	InitTest(&cl)
+	initTest(&cl)
+	delReq := grpcspec.DeleteRequest{
+		Uuid: uuid.New().String(),
+	}
 
 	t.Run("simple", func(t *testing.T) {
 		ctx := context.Background()
@@ -140,7 +147,7 @@ func TestDelete(t *testing.T) {
 		defer conn.Close()
 
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.Delete(ctx, &DelID)
+		_, err = client.Delete(ctx, &delReq)
 		require.Nil(t, err)
 	})
 
@@ -150,9 +157,9 @@ func TestDelete(t *testing.T) {
 		require.Nil(t, err)
 		defer conn.Close()
 
-		DelID.Id = "deadbeef"
+		delReq.Uuid = "deadbeef"
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.Delete(ctx, &DelID)
+		_, err = client.Delete(ctx, &delReq)
 		require.NotNil(t, err)
 	})
 }
@@ -160,7 +167,12 @@ func TestDelete(t *testing.T) {
 func TestGet(t *testing.T) {
 	_ = config.InitConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
-	InitTest(&cl)
+	initTest(&cl)
+	dt, err := ptypes.TimestampProto(date)
+	require.Nil(t, err)
+	getReq := grpcspec.GetRequest{
+		Date: dt,
+	}
 
 	t.Run("simple", func(t *testing.T) {
 		ctx := context.Background()
@@ -169,19 +181,7 @@ func TestGet(t *testing.T) {
 		defer conn.Close()
 
 		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.GetForDay(ctx, &GetReq)
+		_, err = client.GetForDay(ctx, &getReq)
 		require.Nil(t, err)
-	})
-
-	t.Run("not valid date", func(t *testing.T) {
-		ctx := context.Background()
-		conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
-		require.Nil(t, err)
-		defer conn.Close()
-
-		GetReq.Date = "tomorrow"
-		client := grpcspec.NewCalendarClient(conn)
-		_, err = client.GetForDay(ctx, &GetReq)
-		require.NotNil(t, err)
 	})
 }

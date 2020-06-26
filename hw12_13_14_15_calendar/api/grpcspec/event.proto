@@ -1,42 +1,55 @@
 syntax = "proto3";
 option go_package=".;grpcspec";
+import "google/protobuf/timestamp.proto";
 
 message Event {
   string uuid = 1;
   string title = 2;
-  string start = 3;
-  string end = 4;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
   string description = 5;
   string ownerid = 6;
-  string notifyin = 7;
+  int64 notifyin = 7;
 }
 
-message Empty {
-
+message CreateRequest {
+  Event event = 1;
 }
 
-message EventList {
-  repeated Event event = 1;
-}
-
-message Id {
-  string id = 1;
+message CreateResponse {
+  string uuid = 1;
 }
 
 message UpdateRequest {
-  string id = 1;
+  string uuid = 1;
   Event event = 2;
 }
 
-message Date {
-  string Date = 1;
+message UpdateResponse {
+
+}
+
+message DeleteRequest {
+  string uuid = 1;
+}
+
+message DeleteResponse {
+
+}
+
+message GetRequest {
+  google.protobuf.Timestamp date = 1;
+}
+
+message GetResponse {
+  repeated Event event = 1;
 }
 
 service Calendar {
-  rpc Create(Event) returns (Id) {};
-  rpc Update(UpdateRequest) returns (Empty) {};
-  rpc Delete(Id) returns (Empty) {};
-  rpc GetForDay(Date) returns (EventList) {};
-  rpc GetForWeek(Date) returns (EventList) {};
-  rpc GetForMonth(Date) returns (EventList) {};
+  rpc Create(CreateRequest) returns (CreateResponse) {};
+  rpc Update(UpdateRequest) returns (UpdateResponse) {};
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {};
+  rpc GetForDay(GetRequest) returns (GetResponse) {};
+  rpc GetForWeek(GetRequest) returns (GetResponse) {};
+  rpc GetForMonth(GetRequest) returns (GetResponse) {};
 }

@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/logger"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/logger"
 	. "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/tests"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
