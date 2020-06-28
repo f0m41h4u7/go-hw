@@ -8,6 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	day   = 24 * time.Hour
+	week  = 7 * day
+	month = 4 * week
+)
+
 type Calendar struct {
 	Storage StorageInterface
 }
@@ -23,16 +29,16 @@ func (c *Calendar) CreateEvent(ev internal.Event) (uuid.UUID, error) {
 	return c.Storage.CreateEvent(ev)
 }
 
-func (c *Calendar) GetEventsFromDay(date time.Time) ([]internal.Event, error) {
-	return c.Storage.GetFromInterval(date, 24*time.Hour)
+func (c *Calendar) GetEventsForDay(date time.Time) ([]internal.Event, error) {
+	return c.Storage.GetFromInterval(date, day)
 }
 
-func (c *Calendar) GetEventsFromWeek(date time.Time) ([]internal.Event, error) {
-	return c.Storage.GetFromInterval(date, 7*24*time.Hour)
+func (c *Calendar) GetEventsForWeek(date time.Time) ([]internal.Event, error) {
+	return c.Storage.GetFromInterval(date, week)
 }
 
-func (c *Calendar) GetEventsFromMonth(date time.Time) ([]internal.Event, error) {
-	return c.Storage.GetFromInterval(date, 30*7*24*time.Hour)
+func (c *Calendar) GetEventsForMonth(date time.Time) ([]internal.Event, error) {
+	return c.Storage.GetFromInterval(date, month)
 }
 
 func (c *Calendar) UpdateEvent(ev internal.Event, u uuid.UUID) error {

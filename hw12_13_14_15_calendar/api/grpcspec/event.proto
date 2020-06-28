@@ -1,0 +1,55 @@
+syntax = "proto3";
+option go_package=".;grpcspec";
+import "google/protobuf/timestamp.proto";
+
+message Event {
+  string uuid = 1;
+  string title = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+  string description = 5;
+  string ownerid = 6;
+  int64 notifyin = 7;
+}
+
+message CreateRequest {
+  Event event = 1;
+}
+
+message CreateResponse {
+  string uuid = 1;
+}
+
+message UpdateRequest {
+  string uuid = 1;
+  Event event = 2;
+}
+
+message UpdateResponse {
+
+}
+
+message DeleteRequest {
+  string uuid = 1;
+}
+
+message DeleteResponse {
+
+}
+
+message GetRequest {
+  google.protobuf.Timestamp date = 1;
+}
+
+message GetResponse {
+  repeated Event event = 1;
+}
+
+service Calendar {
+  rpc Create(CreateRequest) returns (CreateResponse) {};
+  rpc Update(UpdateRequest) returns (UpdateResponse) {};
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {};
+  rpc GetForDay(GetRequest) returns (GetResponse) {};
+  rpc GetForWeek(GetRequest) returns (GetResponse) {};
+  rpc GetForMonth(GetRequest) returns (GetResponse) {};
+}

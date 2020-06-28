@@ -7,7 +7,7 @@ import (
 	"github.com/araddon/dateparse"
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
 	cl "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/pkg/config"
+	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
