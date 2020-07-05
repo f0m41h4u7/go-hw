@@ -14,15 +14,13 @@ import (
 
 var (
 	cfgFile string
-	//nolint:unused
-	sigs = make(chan os.Signal, 1)
+	sigs    = make(chan os.Signal, 1)
 )
 
 func init() {
 	flag.StringVar(&cfgFile, "config", "", "path to config file")
 }
 
-//nolint: deadcode,unused
 func main() {
 	flag.Parse()
 
