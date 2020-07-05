@@ -29,7 +29,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	err := config.InitConfig(cfgFile)
+	err := config.InitCalendarConfig(cfgFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,12 +42,14 @@ func main() {
 	if config.Conf.SQL {
 		st, err = db.NewSQLDatabase()
 		if err != nil {
-			log.Fatal(err)
+			zap.L().Error("cannot init sql database", zap.Error(err))
+			return
 		}
 	} else {
 		st, err = db.NewInMemDatabase()
 		if err != nil {
-			log.Fatal(err)
+			zap.L().Error("cannot init inmemory database", zap.Error(err))
+			return
 		}
 	}
 
