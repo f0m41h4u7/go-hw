@@ -11,6 +11,7 @@ var SchedConf SchedulerConfig
 
 type SchedulerConfig struct {
 	Rabbit   ServerConfiguration
+	Interval int64
 	SQL      bool
 	Database DBConfiguration
 }

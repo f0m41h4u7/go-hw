@@ -29,11 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c, err := rabbitmq.NewConsumer()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("connected to rabbit")
+	c := rabbitmq.NewConsumer()
 
 	app := sender.NewSender(c)
 	defer func() {
@@ -42,15 +38,12 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	log.Printf("created sender")
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	errs := make(chan error, 1)
 
 	go func() {
-		for {
-			errs <- app.Listen()
-		}
+		errs <- app.Listen()
 	}()
 
 	select {

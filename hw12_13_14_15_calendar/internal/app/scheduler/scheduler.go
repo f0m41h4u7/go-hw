@@ -8,18 +8,22 @@ import (
 
 	"github.com/araddon/dateparse"
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/google/uuid"
 )
 
 const year = 365 * 24 * time.Hour
 
+type Storage interface {
+	GetAllEvents() ([]in.Event, error)
+	DeleteEvent(uuid.UUID) error
+}
+
 type Scheduler struct {
-	Storage   calendar.StorageInterface
+	Storage   Storage
 	Publisher PublisherInterface
 }
 
-func NewScheduler(st calendar.StorageInterface, p PublisherInterface) Scheduler {
+func NewScheduler(st Storage, p PublisherInterface) Scheduler {
 	return Scheduler{
 		Storage:   st,
 		Publisher: p,
@@ -47,42 +51,43 @@ func (s *Scheduler) Publish(ev in.Event) error {
 	return s.Publisher.Send(data)
 }
 
-func (s *Scheduler) Scan() error {
+func (s *Scheduler) Scan() {
 	evs, err := s.Storage.GetAllEvents()
 	if err != nil {
-		return err
+		log.Printf("failed to get events: %+v\n", err)
 	}
 	fmt.Println(evs)
 	for _, ev := range evs {
 		res, err := checkYear(ev.End)
 		if err != nil {
-			return err
+			log.Printf("error when checking event date: %+v\n", err)
 		}
 		if !res {
 			id, err := uuid.Parse(ev.UUID)
 			if err != nil {
-				return err
+				log.Printf("failed to parse uuid: %+v\n", err)
 			}
-			log.Printf("Deleting old event %s\n", ev.UUID)
+			log.Printf("deleting old event %s\n", ev.UUID)
 			_ = s.Storage.DeleteEvent(id)
 		}
-
+		//nolint:nestif
 		if ev.NotifyIn != "" {
 			start, err := dateparse.ParseAny(ev.Start)
 			if err != nil {
-				return err
+				log.Printf("failed to parse date: %+v\n", err)
 			}
 			notif, err := strconv.Atoi(ev.NotifyIn)
 			if err != nil {
-				return err
+				log.Printf("failed to parse notification interval: %+v\n", err)
 			}
 			if time.Until(start) <= time.Duration(notif) {
-				return s.Publish(ev)
+				err := s.Publish(ev)
+				if err != nil {
+					log.Printf("publisher error: %+v\n", err)
+				}
 			}
 		}
 	}
-
-	return nil
 }
 
 func (s *Scheduler) Stop() error {

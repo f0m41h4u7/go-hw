@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -8,17 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/scheduler"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/db"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/rabbitmq"
 )
 
-var (
-	cfgFile string
-	sigs    = make(chan os.Signal, 1)
-)
+var cfgFile string
 
 func init() {
 	flag.StringVar(&cfgFile, "config", "", "path to config file")
@@ -32,8 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var st calendar.StorageInterface
-	if config.Conf.SQL {
+	var st scheduler.Storage
+	if config.SchedConf.SQL {
 		st, err = db.NewSQLDatabase()
 		if err != nil {
 			log.Fatal(err)
@@ -46,13 +43,7 @@ func main() {
 	}
 	log.Printf("connected to db")
 
-	p, err := rabbitmq.NewPublisher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("connected to rabbit")
-
-	app := scheduler.NewScheduler(st, p)
+	app := scheduler.NewScheduler(st, rabbitmq.NewPublisher())
 	defer func() {
 		err := app.Stop()
 		if err != nil {
@@ -61,28 +52,26 @@ func main() {
 	}()
 	log.Printf("created scheduler")
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	errs := make(chan error, 1)
+	sigs := make(chan os.Signal, 1)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	ticker := time.NewTicker(time.Duration(config.SchedConf.Interval) * time.Millisecond)
+	defer cancel()
 
 	go func() {
 		for {
-			err := app.Scan()
-			if err != nil {
-				errs <- err
+			select {
+			case <-sigs:
+				signal.Stop(sigs)
+				return
+			case <-ticker.C:
+				app.Scan()
+			case <-ctx.Done():
+				return
 			}
-			log.Printf("scan done")
-			time.Sleep(time.Minute)
 		}
 	}()
 
-	select {
-	case <-sigs:
-		signal.Stop(sigs)
-		return
-	case err = <-errs:
-		if err != nil {
-			log.Fatal(err)
-		}
-		return
-	}
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sigs
 }

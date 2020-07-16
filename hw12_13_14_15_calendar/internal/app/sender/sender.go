@@ -1,11 +1,10 @@
 package sender
 
 import (
-	"bytes"
 	"log"
-	"time"
 
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
+	"github.com/streadway/amqp"
 )
 
 type Sender struct {
@@ -18,27 +17,20 @@ func NewSender(c ConsumerInterface) Sender {
 	}
 }
 
-func (s *Sender) Listen() error {
-	msgs, err := s.Consumer.Receive()
-	if err != nil {
-		return err
-	}
+func getEvents(msgs <-chan amqp.Delivery) {
 	for d := range msgs {
 		ev := in.Event{}
 		err := ev.UnmarshalJSON(d.Body)
 		if err != nil {
-			return err
-		}
-		log.Printf("Received a message: %s", d.Body)
-		dotCount := bytes.Count(d.Body, []byte("."))
-		t := time.Duration(dotCount)
-		time.Sleep(t * time.Second)
-		err = d.Ack(false)
-		if err != nil {
-			return err
+			log.Printf("Cannot parse notification")
+		} else {
+			log.Printf("Received a notification: %s", d.Body)
 		}
 	}
-	return nil
+}
+
+func (s *Sender) Listen() error {
+	return s.Consumer.Receive(getEvents)
 }
 
 func (s *Sender) Stop() error {
