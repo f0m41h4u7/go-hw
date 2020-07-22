@@ -31,7 +31,7 @@ func main() {
 
 	var st scheduler.Storage
 	if config.SchedConf.SQL {
-		st, err = db.NewSQLDatabase()
+		st, err = db.NewSQLDatabase(config.SchedConf.Database)
 		if err != nil {
 			log.Fatal(err)
 		}

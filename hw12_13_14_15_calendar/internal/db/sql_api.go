@@ -7,7 +7,7 @@ import (
 	"github.com/araddon/dateparse"
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
 	cl "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -17,10 +17,10 @@ type SQLDb struct {
 	base *sqlx.DB
 }
 
-func NewSQLDatabase() (cl.StorageInterface, error) {
+func NewSQLDatabase(cf config.DBConfiguration) (cl.StorageInterface, error) {
 	var err error
 	var DB SQLDb
-	DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
+	DB.base, err = sqlx.Connect("mysql", cf.User+":"+cf.Password+"@("+cf.Host+":"+cf.Port+")/"+cf.Name+"?charset=utf8&parseTime=True&loc=Local")
 	return &DB, err
 }
 

@@ -39,6 +39,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+	log.Println("created sender")
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	errs := make(chan error, 1)

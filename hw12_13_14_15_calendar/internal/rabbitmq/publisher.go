@@ -18,15 +18,15 @@ type Publisher struct {
 	address string
 	conn    *amqp.Connection
 	channel *amqp.Channel
-	queue   string
-	done    chan error
+	//	queue   string
+	done chan error
 }
 
 func NewPublisher() scheduler.PublisherInterface {
 	return &Publisher{
 		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		queue:   "eventQueue",
-		done:    make(chan error),
+		//	queue:   "eventQueue",
+		done: make(chan error),
 	}
 }
 
@@ -52,8 +52,8 @@ func (p *Publisher) Send(data []byte) error {
 				continue
 			}
 			err := p.channel.Publish(
+				"event",
 				"",
-				p.queue,
 				false,
 				false,
 				amqp.Publishing{
@@ -87,14 +87,16 @@ func (p *Publisher) Connect() error {
 		log.Printf("closing: %s", <-p.conn.NotifyClose(make(chan *amqp.Error)))
 		p.done <- errors.New("channel closed")
 	}()
-	err = p.channel.QueueBind(
-		p.queue,
-		"",
-		"",
+
+	return p.channel.ExchangeDeclare(
+		"event",
+		"fanout",
+		true,
+		false,
+		false,
 		false,
 		nil,
 	)
-	return err
 }
 
 func (p *Publisher) Reconnect() {

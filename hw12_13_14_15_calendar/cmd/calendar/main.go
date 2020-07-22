@@ -40,7 +40,7 @@ func main() {
 
 	var st calendar.StorageInterface
 	if config.Conf.SQL {
-		st, err = db.NewSQLDatabase()
+		st, err = db.NewSQLDatabase(config.Conf.Database)
 		if err != nil {
 			zap.L().Error("cannot init sql database", zap.Error(err))
 			return

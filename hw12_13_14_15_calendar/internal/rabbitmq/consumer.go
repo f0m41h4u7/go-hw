@@ -25,8 +25,8 @@ type Consumer struct {
 func NewConsumer() sender.ConsumerInterface {
 	return &Consumer{
 		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		queue:   "eventQueue",
-		done:    make(chan error),
+		//		queue:   "eventQueue",
+		done: make(chan error),
 	}
 }
 
@@ -47,14 +47,35 @@ func (c *Consumer) Connect() error {
 		c.done <- errors.New("channel Closed")
 	}()
 
-	err = c.channel.QueueBind(
-		c.queue,
+	q, err := c.channel.QueueDeclare(
 		"",
-		"",
+		false,
+		false,
+		true,
 		false,
 		nil,
 	)
-	return err
+	c.queue = q.Name
+
+	if err = c.channel.ExchangeDeclare(
+		"event",
+		"fanout",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	); err != nil {
+		return err
+	}
+
+	return c.channel.QueueBind(
+		c.queue,
+		"",
+		"event",
+		false,
+		nil,
+	)
 }
 
 func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) {

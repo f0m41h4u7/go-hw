@@ -3,7 +3,6 @@ package scheduler
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/araddon/dateparse"
@@ -76,11 +75,11 @@ func (s *Scheduler) Scan() {
 			if err != nil {
 				log.Printf("failed to parse date: %+v\n", err)
 			}
-			notif, err := strconv.Atoi(ev.NotifyIn)
+			notif, err := time.ParseDuration(ev.NotifyIn)
 			if err != nil {
 				log.Printf("failed to parse notification interval: %+v\n", err)
 			}
-			if time.Until(start) <= time.Duration(notif) {
+			if time.Until(start) <= notif {
 				err := s.Publish(ev)
 				if err != nil {
 					log.Printf("publisher error: %+v\n", err)
