@@ -71,7 +71,6 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 			return nil, fmt.Errorf("stop reconnecting")
 		}
 
-		//nolint:gosimple
 		select {
 		case <-ctx.Done():
 			return nil, nil
@@ -98,7 +97,7 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 	}
 }
 
-func (c *Consumer) Receive(fn func(<-chan amqp.Delivery), ctx context.Context) error {
+func (c *Consumer) Receive(ctx context.Context, fn func(<-chan amqp.Delivery)) error {
 	var err error
 	if err = c.Connect(); err != nil {
 		return err

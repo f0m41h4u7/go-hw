@@ -8,7 +8,7 @@ import (
 
 type ConsumerInterface interface {
 	Connect() error
-	Receive(func(<-chan amqp.Delivery), context.Context) error
+	Receive(context.Context, func(<-chan amqp.Delivery)) error
 	Reconnect(context.Context) (<-chan amqp.Delivery, error)
 	Close() error
 }
