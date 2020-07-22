@@ -1,0 +1,15 @@
+{
+  "rabbit": {
+    "host": "127.0.0.1",
+    "port": 1423
+  },
+  "interval": 500,
+  "sql": true,
+  "database": {
+    "name": "default",
+    "host": "127.0.0.1",
+    "port": 1338,
+    "user": "qwerty",
+    "password": "pswd"
+  }
+}

@@ -1,6 +1,6 @@
 package db
 
-//nolint
+//nolint:golint
 import (
 	"time"
 
@@ -35,6 +35,7 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 	}
 
 	ev := in.Event{}
+	//nolint:sqlclosecheck
 	rows, err := db.base.Queryx("SELECT * FROM events")
 	if err != nil {
 		return err

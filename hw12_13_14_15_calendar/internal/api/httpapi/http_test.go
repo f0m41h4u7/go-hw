@@ -36,7 +36,7 @@ func performRequest(r http.Handler, method, path string, body io.Reader) *httpte
 }
 
 func TestHelloWorld(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
@@ -71,7 +71,7 @@ func TestHelloWorld(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
 	r, err := TestEvent.MarshalJSON()
 	require.Nil(t, err)
@@ -124,7 +124,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
@@ -178,7 +178,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
 	path := "/delete/" + uuid.New().String()
 
@@ -209,7 +209,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("../../../../tests/testdata/config.json")
 	_ = logger.InitLogger()
 	path := "/getday?day=" + url.QueryEscape("2023-03-11T00:00:00")
 

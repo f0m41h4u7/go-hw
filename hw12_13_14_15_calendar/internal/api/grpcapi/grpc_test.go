@@ -45,7 +45,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 }
 
 func TestCreate(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("tests/testdata/config.json")
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
@@ -98,7 +98,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("tests/testdata/config.json")
 	_ = logger.InitLogger()
 	st.Err = nil
 	cl = calendar.NewCalendar(&st)
@@ -133,7 +133,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("tests/testdata/config.json")
 	_ = logger.InitLogger()
 	initTest(&cl)
 	delReq := grpcspec.DeleteRequest{
@@ -165,7 +165,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	_ = config.InitConfig("../../../../tests/testdata/config.json")
+	_ = config.InitCalendarConfig("tests/testdata/config.json")
 	_ = logger.InitLogger()
 	initTest(&cl)
 	dt, err := ptypes.TimestampProto(date)
