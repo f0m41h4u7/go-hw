@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -42,15 +43,20 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	errs := make(chan error, 1)
 
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
 	go func() {
-		errs <- app.Listen()
+		errs <- app.Listen(ctx)
 	}()
 
 	select {
 	case <-sigs:
 		signal.Stop(sigs)
+		cancel()
 		return
 	case err = <-errs:
+		cancel()
 		if err != nil {
 			log.Fatal(err)
 		}

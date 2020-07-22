@@ -57,14 +57,14 @@ func (c *Consumer) Connect() error {
 	return err
 }
 
-func (c *Consumer) Reconnect() (<-chan amqp.Delivery, error) {
+func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) {
 	be := backoff.NewExponentialBackOff()
 	be.MaxElapsedTime = time.Minute
 	be.InitialInterval = 1 * time.Second
 	be.Multiplier = 2
 	be.MaxInterval = 15 * time.Second
 
-	b := backoff.WithContext(be, context.Background())
+	b := backoff.WithContext(be, ctx)
 	for {
 		d := b.NextBackOff()
 		if d == backoff.Stop {
@@ -73,6 +73,8 @@ func (c *Consumer) Reconnect() (<-chan amqp.Delivery, error) {
 
 		//nolint:gosimple
 		select {
+		case <-ctx.Done():
+			return nil, nil
 		case <-time.After(d):
 			if err := c.Connect(); err != nil {
 				log.Printf("could not connect in reconnect call: %+v", err)
@@ -91,13 +93,12 @@ func (c *Consumer) Reconnect() (<-chan amqp.Delivery, error) {
 				fmt.Printf("could not connect: %+v", err)
 				continue
 			}
-
 			return msgs, nil
 		}
 	}
 }
 
-func (c *Consumer) Receive(fn func(<-chan amqp.Delivery)) error {
+func (c *Consumer) Receive(fn func(<-chan amqp.Delivery), ctx context.Context) error {
 	var err error
 	if err = c.Connect(); err != nil {
 		return err
@@ -119,7 +120,7 @@ func (c *Consumer) Receive(fn func(<-chan amqp.Delivery)) error {
 		go fn(msgs)
 
 		if <-c.done != nil {
-			msgs, err = c.Reconnect()
+			msgs, err = c.Reconnect(ctx)
 			if err != nil {
 				return err
 			}

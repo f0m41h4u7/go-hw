@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"context"
 	"log"
 
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
@@ -29,8 +30,8 @@ func getEvents(msgs <-chan amqp.Delivery) {
 	}
 }
 
-func (s *Sender) Listen() error {
-	return s.Consumer.Receive(getEvents)
+func (s *Sender) Listen(ctx context.Context) error {
+	return s.Consumer.Receive(getEvents, ctx)
 }
 
 func (s *Sender) Stop() error {
