@@ -2,9 +2,13 @@ package db
 
 //nolint:golint
 import (
+	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/araddon/dateparse"
+	"github.com/cenkalti/backoff/v3"
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
 	cl "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
@@ -17,10 +21,38 @@ type SQLDb struct {
 	base *sqlx.DB
 }
 
-func NewSQLDatabase(cf config.DBConfiguration) (cl.StorageInterface, error) {
+func reconnect(ctx context.Context, cf config.DBConfiguration) (*sqlx.DB, error) {
+	be := backoff.NewExponentialBackOff()
+	be.MaxElapsedTime = time.Minute
+	be.InitialInterval = 1 * time.Second
+	be.Multiplier = 2
+	be.MaxInterval = 15 * time.Second
+
+	b := backoff.WithContext(be, ctx)
+	for {
+		d := b.NextBackOff()
+		if d == backoff.Stop {
+			return nil, fmt.Errorf("stop reconnecting")
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, nil
+		case <-time.After(d):
+			db, err := sqlx.Connect("mysql", cf.User+":"+cf.Password+"@("+cf.Host+":"+cf.Port+")/"+cf.Name+"?charset=utf8&parseTime=True&loc=Local")
+			if err != nil {
+				log.Printf("could not connect to db: %+v", err)
+				continue
+			}
+			return db, nil
+		}
+	}
+}
+
+func NewSQLDatabase(ctx context.Context, cf config.DBConfiguration) (cl.StorageInterface, error) {
 	var err error
 	var DB SQLDb
-	DB.base, err = sqlx.Connect("mysql", cf.User+":"+cf.Password+"@("+cf.Host+":"+cf.Port+")/"+cf.Name+"?charset=utf8&parseTime=True&loc=Local")
+	DB.base, err = reconnect(ctx, cf)
 	return &DB, err
 }
 

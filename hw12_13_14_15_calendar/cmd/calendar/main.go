@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -38,9 +39,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
 	var st calendar.StorageInterface
 	if config.Conf.SQL {
-		st, err = db.NewSQLDatabase(config.Conf.Database)
+		st, err = db.NewSQLDatabase(ctx, config.Conf.Database)
 		if err != nil {
 			zap.L().Error("cannot init sql database", zap.Error(err))
 			return

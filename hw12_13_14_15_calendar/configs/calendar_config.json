@@ -1,11 +1,11 @@
 {
   "HTTPServer": {
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "port": 1337
   },
   "GRPCServer": {
-    "host": "127.0.0.1",
-    "port": 1339
+    "host": "0.0.0.0",
+    "port": 1338
   },
   "logger": {
     "file": "calendar_log.out",
@@ -14,8 +14,8 @@
   "sql": "true",
   "database": {
     "name": "default",
-    "host": "127.0.0.1",
-    "port": 1338,
+    "host": "db",
+    "port": 3306,
     "user": "qwerty",
     "password": "pswd"
   }

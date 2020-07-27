@@ -46,7 +46,7 @@ func (s *Scheduler) Publish(ev in.Event) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Sending data %s\n", data)
+	log.Printf("sending notification %s\n", data)
 	return s.Publisher.Send(data)
 }
 
@@ -79,7 +79,7 @@ func (s *Scheduler) Scan() {
 			if err != nil {
 				log.Printf("failed to parse notification interval: %+v\n", err)
 			}
-			if time.Until(start) <= notif {
+			if (time.Now().Before(start)) && (time.Until(start) <= notif) {
 				err := s.Publish(ev)
 				if err != nil {
 					log.Printf("publisher error: %+v\n", err)

@@ -11,6 +11,9 @@ run:
 	make build
 	./$(CALENDAR_CMD)
 
+up:
+	docker-compose -f ./deployments/docker-compose.yml up
+
 test:
 	go test -v -count=1 -race -gcflags=-l -timeout=30s ./...
 
@@ -26,5 +29,8 @@ migrate:
 
 gen:
 	go generate ./...
+
+bdd:
+	docker-compose -f ./tests/docker-compose-test.yml up
 
 .PHONY: build run test lint clean migrate gen

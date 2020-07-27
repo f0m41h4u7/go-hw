@@ -1,10 +1,6 @@
 {
   "rabbit": {
-    "host": "127.0.0.1",
+    "host": "rabbitmq",
     "port": 5672
-  },
-  "logger": {
-    "file": "sender_log.out",
-    "level": "debug"
   }
 }

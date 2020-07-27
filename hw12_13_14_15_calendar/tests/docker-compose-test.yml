@@ -1,0 +1,78 @@
+version: '3.8'
+networks:
+  rabbit:
+    driver: bridge
+  db:
+    driver: bridge
+services:
+  db:
+    container_name: db
+    hostname: db
+    image: "mysql"
+    ports:
+      - "3306"
+    environment:
+      - MYSQL_DATABASE=default
+      - MYSQL_USER=qwerty
+      - MYSQL_PASSWORD=pswd
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    networks:
+      - db
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    image: "rabbitmq:3.8.5-management"
+    ports:
+      - "5672"
+      - "15672"
+    networks:
+      - rabbit
+  calendar:
+    build:
+      context: ../
+      dockerfile: ./build/Dockerfile
+      args:
+        - APP=calendar
+    entrypoint: ["./tests/calendar_test_entrypoint.sh"]
+    volumes:
+      - "../configs/calendar_config.json:/Calendar/calendar_config.json"
+    ports:
+      - "1337:1337"
+      - "1338:1338"
+    restart: on-failure
+    depends_on:
+      - db
+    networks:
+      - db
+  scheduler:
+    build:
+      context: ../
+      dockerfile: ./build/Dockerfile
+      args:
+        - APP=scheduler
+    entrypoint: ["./main", "-config", "scheduler_config.json"]
+    volumes:
+      - "../configs/scheduler_config.json:/Calendar/scheduler_config.json"
+    restart: on-failure
+    depends_on:
+      - db
+      - rabbitmq
+      - calendar
+    networks:
+      - db
+      - rabbit
+  sender:
+    build:
+      context: ../
+      dockerfile: ./build/Dockerfile
+      args:
+        - APP=sender
+    entrypoint: ["./main", "-config", "sender_config.json"]
+    volumes:
+      - "../configs/sender_config.json:/Calendar/sender_config.json"
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - scheduler
+    networks:
+      - rabbit

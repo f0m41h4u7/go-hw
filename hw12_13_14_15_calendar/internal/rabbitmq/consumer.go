@@ -25,8 +25,7 @@ type Consumer struct {
 func NewConsumer() sender.ConsumerInterface {
 	return &Consumer{
 		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		//		queue:   "eventQueue",
-		done: make(chan error),
+		done:    make(chan error),
 	}
 }
 
@@ -44,8 +43,9 @@ func (c *Consumer) Connect() error {
 
 	go func() {
 		log.Printf("closing: %s", <-c.conn.NotifyClose(make(chan *amqp.Error)))
-		c.done <- errors.New("channel Closed")
+		c.done <- errors.New("channel closed")
 	}()
+	log.Printf("connected to rabbit")
 
 	q, err := c.channel.QueueDeclare(
 		"",
@@ -80,10 +80,10 @@ func (c *Consumer) Connect() error {
 
 func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) {
 	be := backoff.NewExponentialBackOff()
-	be.MaxElapsedTime = time.Minute
+	be.MaxElapsedTime = 3 * time.Minute
 	be.InitialInterval = 1 * time.Second
 	be.Multiplier = 2
-	be.MaxInterval = 15 * time.Second
+	be.MaxInterval = 30 * time.Second
 
 	b := backoff.WithContext(be, ctx)
 	for {
@@ -110,7 +110,7 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 				nil,
 			)
 			if err != nil {
-				fmt.Printf("could not connect: %+v", err)
+				log.Printf("could not connect: %+v", err)
 				continue
 			}
 			return msgs, nil
@@ -119,19 +119,7 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 }
 
 func (c *Consumer) Receive(ctx context.Context, fn func(<-chan amqp.Delivery)) error {
-	var err error
-	if err = c.Connect(); err != nil {
-		return err
-	}
-	msgs, err := c.channel.Consume(
-		c.queue,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	msgs, err := c.Reconnect(ctx)
 	if err != nil {
 		return err
 	}

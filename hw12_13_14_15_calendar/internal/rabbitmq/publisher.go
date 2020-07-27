@@ -18,15 +18,13 @@ type Publisher struct {
 	address string
 	conn    *amqp.Connection
 	channel *amqp.Channel
-	//	queue   string
-	done chan error
+	done    chan error
 }
 
 func NewPublisher() scheduler.PublisherInterface {
 	return &Publisher{
-		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		//	queue:   "eventQueue",
-		done: make(chan error),
+		address: "amqp://" + net.JoinHostPort(config.SchedConf.Rabbit.Host, config.SchedConf.Rabbit.Port),
+		done:    make(chan error),
 	}
 }
 
@@ -48,7 +46,7 @@ func (p *Publisher) Send(data []byte) error {
 		select {
 		case <-time.After(d):
 			if err := p.Connect(); err != nil {
-				log.Printf("could not connect in reconnect call: %+v", err)
+				log.Printf("could not reconnect: %+v", err)
 				continue
 			}
 			err := p.channel.Publish(
@@ -97,9 +95,6 @@ func (p *Publisher) Connect() error {
 		false,
 		nil,
 	)
-}
-
-func (p *Publisher) Reconnect() {
 }
 
 func (p *Publisher) Close() error {
