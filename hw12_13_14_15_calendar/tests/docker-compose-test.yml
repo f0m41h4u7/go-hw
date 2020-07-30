@@ -5,6 +5,17 @@ networks:
   db:
     driver: bridge
 services:
+  integration_tests:
+    container_name: integration_tests
+    build: integration_tests
+    command: "true"
+    depends_on:
+      - calendar
+      - scheduler
+      - sender
+    networks:
+      - db
+      - rabbit
   db:
     container_name: db
     hostname: db
@@ -28,6 +39,7 @@ services:
     networks:
       - rabbit
   calendar:
+    hostname: calendar
     build:
       context: ../
       dockerfile: ./build/Dockerfile

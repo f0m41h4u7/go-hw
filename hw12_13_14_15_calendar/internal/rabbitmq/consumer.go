@@ -55,6 +55,9 @@ func (c *Consumer) Connect() error {
 		false,
 		nil,
 	)
+	if err != nil {
+		return err
+	}
 	c.queue = q.Name
 
 	if err = c.channel.ExchangeDeclare(
