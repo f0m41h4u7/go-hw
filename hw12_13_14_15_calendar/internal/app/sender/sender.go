@@ -33,6 +33,7 @@ func getEvents(msgs <-chan amqp.Delivery) {
 
 func (s *Sender) Listen(ctx context.Context) error {
 	log.Printf("start listening")
+
 	return s.Consumer.Receive(ctx, getEvents)
 }
 

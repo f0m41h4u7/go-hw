@@ -37,6 +37,7 @@ func checkYear(end string) (bool, error) {
 	if time.Since(date) >= year {
 		return false, nil
 	}
+
 	return true, nil
 }
 
@@ -47,6 +48,7 @@ func (s *Scheduler) Publish(ev in.Event) error {
 		return err
 	}
 	log.Printf("sending notification %s\n", data)
+
 	return s.Publisher.Send(data)
 }
 

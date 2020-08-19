@@ -63,6 +63,7 @@ func main() {
 			select {
 			case <-sigs:
 				signal.Stop(sigs)
+
 				return
 			case <-ticker.C:
 				app.Scan()

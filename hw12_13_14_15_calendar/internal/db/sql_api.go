@@ -42,8 +42,10 @@ func reconnect(ctx context.Context, cf config.DBConfiguration) (*sqlx.DB, error)
 			db, err := sqlx.Connect("mysql", cf.User+":"+cf.Password+"@("+cf.Host+":"+cf.Port+")/"+cf.Name+"?charset=utf8&parseTime=True&loc=Local")
 			if err != nil {
 				log.Printf("could not connect to db: %+v", err)
+
 				continue
 			}
+
 			return db, nil
 		}
 	}
@@ -53,6 +55,7 @@ func NewSQLDatabase(ctx context.Context, cf config.DBConfiguration) (cl.StorageI
 	var err error
 	var DB SQLDb
 	DB.base, err = reconnect(ctx, cf)
+
 	return &DB, err
 }
 
@@ -91,6 +94,7 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -109,18 +113,21 @@ func (db *SQLDb) CreateEvent(ev in.Event) (uuid.UUID, error) {
 	}
 	ev.UUID = id.String()
 	_, err = db.base.Exec(`INSERT INTO events (uuid, title, start, end, description, ownerid, notifyin) VALUES (?, ?, ?, ?, ?, ?, ?)`, id.String(), ev.Title, ev.Start, ev.End, ev.Description, ev.OwnerID, ev.NotifyIn)
+
 	return id, err
 }
 
 func (db *SQLDb) GetAllEvents() ([]in.Event, error) {
 	evs := []in.Event{}
 	err := db.base.Select(&evs, "SELECT * FROM events")
+
 	return evs, err
 }
 
 func (db *SQLDb) GetEventByUUID(id uuid.UUID) (in.Event, error) {
 	ev := in.Event{}
 	err := db.base.Get(&ev, "SELECT * FROM events WHERE uuid = ?", id.String())
+
 	return ev, err
 }
 
@@ -147,6 +154,7 @@ func (db *SQLDb) GetFromInterval(start time.Time, delta time.Duration) ([]in.Eve
 	if len(res) != 0 {
 		return res, nil
 	}
+
 	return nil, ErrEventNotFound
 }
 
@@ -167,6 +175,7 @@ func (db *SQLDb) UpdateEvent(ev in.Event, id uuid.UUID) error {
 	}
 	ev.UUID = id.String()
 	_, err = db.base.NamedExec(`UPDATE events SET title=:title, start=:start, end=:end, description=:description, ownerid=:ownerid, notifyin=:notifyin WHERE :uuid = :uuid`, ev)
+
 	return err
 }
 
@@ -175,6 +184,7 @@ func (db *SQLDb) DeleteEvent(id uuid.UUID) error {
 		return ErrEventNotFound
 	}
 	_, err := db.base.Exec("DELETE FROM events WHERE uuid = ?", id)
+
 	return err
 }
 

@@ -6,6 +6,7 @@ require (
 	github.com/akath19/gin-zap v0.0.0-20180806194049-1d9e5171c53e
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
 	github.com/cenkalti/backoff/v3 v3.2.2
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.3.1 // indirect
@@ -27,6 +28,7 @@ require (
 	github.com/valyala/fastjson v1.5.1
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
+	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect

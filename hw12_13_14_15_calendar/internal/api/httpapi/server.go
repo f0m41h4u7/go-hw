@@ -45,6 +45,7 @@ func InitServer(cl *calendar.Calendar) *Server {
 
 func (s *Server) Start() error {
 	gin.SetMode(gin.ReleaseMode)
+
 	return s.http.ListenAndServe()
 }
 

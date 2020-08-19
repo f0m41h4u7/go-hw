@@ -24,6 +24,7 @@ func InitServer(cl *calendar.Calendar) *Server {
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpc_zap.UnaryServerInterceptor(zap.L())))
 	grpcspec.RegisterCalendarServer(grpcServer, s)
 	s.grpc = grpcServer
+
 	return s
 }
 
@@ -33,6 +34,7 @@ func (s *Server) Start() error {
 		return err
 	}
 	err = s.grpc.Serve(lis)
+
 	return err
 }
 

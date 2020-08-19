@@ -55,6 +55,7 @@ func main() {
 	case <-sigs:
 		signal.Stop(sigs)
 		cancel()
+
 		return
 	case err = <-errs:
 		cancel()

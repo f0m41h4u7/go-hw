@@ -47,6 +47,7 @@ func (p *Publisher) Send(data []byte) error {
 		case <-time.After(d):
 			if err := p.Connect(); err != nil {
 				log.Printf("could not reconnect: %+v", err)
+
 				continue
 			}
 			err := p.channel.Publish(
@@ -61,9 +62,11 @@ func (p *Publisher) Send(data []byte) error {
 				})
 			if err != nil {
 				fmt.Printf("failed to send data: %+v", err)
+
 				continue
 			}
 			log.Printf(" [x] Sent %s", data)
+
 			return nil
 		}
 	}
@@ -102,5 +105,6 @@ func (p *Publisher) Close() error {
 	if err != nil {
 		return err
 	}
+
 	return p.conn.Close()
 }

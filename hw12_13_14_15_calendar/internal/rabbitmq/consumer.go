@@ -101,6 +101,7 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 		case <-time.After(d):
 			if err := c.Connect(); err != nil {
 				log.Printf("could not connect in reconnect call: %+v", err)
+
 				continue
 			}
 			msgs, err := c.channel.Consume(
@@ -114,8 +115,10 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 			)
 			if err != nil {
 				log.Printf("could not connect: %+v", err)
+
 				continue
 			}
+
 			return msgs, nil
 		}
 	}
@@ -144,5 +147,6 @@ func (c *Consumer) Close() error {
 	if err != nil {
 		return err
 	}
+
 	return c.conn.Close()
 }

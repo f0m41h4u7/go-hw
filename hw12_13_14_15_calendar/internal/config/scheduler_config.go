@@ -26,6 +26,7 @@ func (c SchedulerConfig) validate() error {
 			return ErrWrongDBHost
 		}
 	}
+
 	return nil
 }
 
@@ -47,5 +48,6 @@ func InitSchedulerConfig(cfgFile string) error {
 	if err := viper.Unmarshal(&SchedConf); err != nil {
 		return ErrCannotParseConfig
 	}
+
 	return SchedConf.validate()
 }

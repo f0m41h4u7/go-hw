@@ -30,18 +30,21 @@ func Create(c *gin.Context) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to read body", zap.Error(err))
+
 		return
 	}
 	err = ev.UnmarshalJSON(bodyBytes)
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to parse body", zap.Error(err))
+
 		return
 	}
 	id, err := app.CreateEvent(ev)
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to create event", zap.Error(err))
+
 		return
 	}
 	c.JSON(200, gin.H{"uuid": id.String()})
@@ -53,6 +56,7 @@ func Update(c *gin.Context) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to decode uuid", zap.Error(err))
+
 		return
 	}
 
@@ -61,18 +65,21 @@ func Update(c *gin.Context) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to read body", zap.Error(err))
+
 		return
 	}
 	err = ev.UnmarshalJSON(bodyBytes)
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to parse body", zap.Error(err))
+
 		return
 	}
 	err = app.UpdateEvent(ev, uuid)
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to update event", zap.Error(err))
+
 		return
 	}
 	c.Writer.WriteHeader(http.StatusOK)
@@ -84,6 +91,7 @@ func Delete(c *gin.Context) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to decode uuid", zap.Error(err))
+
 		return
 	}
 
@@ -91,6 +99,7 @@ func Delete(c *gin.Context) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to delete event", zap.Error(err))
+
 		return
 	}
 	c.Writer.WriteHeader(http.StatusOK)
@@ -101,12 +110,14 @@ func get(c *gin.Context, t DateType) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to parse query param", zap.Error(err))
+
 		return
 	}
 	date, err := dateparse.ParseAny(dec)
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to parse date", zap.Error(err))
+
 		return
 	}
 
@@ -123,12 +134,14 @@ func get(c *gin.Context, t DateType) {
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to get events", zap.Error(err))
+
 		return
 	}
 	resp, err := in.EventList(evs).MarshalJSON()
 	if err != nil {
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		zap.L().Error("failed to parse events", zap.Error(err))
+
 		return
 	}
 	c.JSON(200, resp)

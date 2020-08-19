@@ -16,6 +16,7 @@ type InMemDB struct {
 func NewInMemDatabase() (cl.StorageInterface, error) {
 	var im InMemDB
 	im.base = []in.Event{}
+
 	return &im, nil
 }
 
@@ -32,6 +33,7 @@ func (im *InMemDB) GetEventByUUID(uuid uuid.UUID) (in.Event, error) {
 			return ev, nil
 		}
 	}
+
 	return in.Event{}, ErrEventNotFound
 }
 
@@ -60,6 +62,7 @@ func (im *InMemDB) validateTime(start time.Time, end time.Time, uuidExcept strin
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -78,6 +81,7 @@ func (im *InMemDB) CreateEvent(ev in.Event) (uuid.UUID, error) {
 	}
 	ev.UUID = id.String()
 	im.base = append(im.base, ev)
+
 	return id, nil
 }
 
@@ -100,6 +104,7 @@ func (im *InMemDB) GetFromInterval(start time.Time, delta time.Duration) ([]in.E
 	if len(evs) != 0 {
 		return evs, nil
 	}
+
 	return nil, ErrEventNotFound
 }
 
@@ -124,9 +129,11 @@ func (im *InMemDB) UpdateEvent(newEvent in.Event, uuid uuid.UUID) error {
 			im.base[i].Description = newEvent.Description
 			im.base[i].OwnerID = newEvent.OwnerID
 			im.base[i].NotifyIn = newEvent.NotifyIn
+
 			return nil
 		}
 	}
+
 	return ErrEventNotFound
 }
 
@@ -135,9 +142,11 @@ func (im *InMemDB) DeleteEvent(uuid uuid.UUID) error {
 		if ev.UUID == uuid.String() {
 			im.base[i] = im.base[len(im.base)-1]
 			im.base = im.base[:len(im.base)-1]
+
 			return nil
 		}
 	}
+
 	return ErrEventNotFound
 }
 

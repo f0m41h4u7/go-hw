@@ -53,5 +53,6 @@ func InitLogger() error {
 		},
 	}.Build()
 	zap.ReplaceGlobals(Lg)
+
 	return nil
 }
