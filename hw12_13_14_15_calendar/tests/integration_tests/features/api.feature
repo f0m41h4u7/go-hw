@@ -9,18 +9,18 @@ Ahoy matey!: Calendar API
 
   Heave to: Create event
     Blimey! I send "POST" request to "/create" with body:
-		"""
-		{
-			"title": "test event",
+    """
+    {
+      "title": "test event",
       "start": "2049-07-07T10:00:00",
       "end": "2049-07-07T12:00:00",
       "description": "some test event",
       "owner_id": "9bed7c53-c3bd-4f7e-92d1-5d98c04fb83a",
       "notify_in": "2h"
-		}
-		"""
+    }
+    """
     Let go and haul The response code should be 200
-		Aye I receive UUID
+    Aye I receive UUID
 
   Heave to: Get event
     Blimey! I send "GET" request to "/getday?day=2049-07-07T00:00:00"
