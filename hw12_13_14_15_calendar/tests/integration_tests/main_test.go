@@ -41,8 +41,6 @@ func reconnect() error {
 }
 
 func TestMain(m *testing.M) {
-	//	log.Printf("wait %s for service availability...", delay)
-	//	time.Sleep(delay)
 	err := reconnect()
 	if err != nil {
 		log.Fatal(err)
@@ -66,10 +64,15 @@ func FeatureContext(s *godog.Suite) {
 	test := new(apiTest)
 
 	s.Step(`^I send "(GET|POST)" request to "([^"]*)" with body:$`, test.iSendRequestToWithBody)
-	s.Step(`^I send "(GET|POST)" request to "([^"]*)"$`, test.iSendRequestTo)
+	s.Step(`^I send "(GET|DELETE)" request to "([^"]*)"$`, test.iSendRequestTo)
 	s.Step(`^The response code should be (\d+)$`, test.theResponseCodeShouldBe)
 	s.Step(`^I receive event$`, test.iReceiveEvent)
 	s.Step(`^I receive UUID$`, test.iReceiveUUID)
+	s.Step(`^I send "PUT" request to "([^"]*)" updating title to "([^"]*)"$`, test.iSendRequestToUpdatingTitleTo)
+	s.Step(`^I receive updated event$`, test.iReceiveUpdatedEvent)
+	s.Step(`^There are events in DB$`, test.thereAreEventsInDB)
+	s.Step(`^I receive list of events for (week|month)$`, test.iReceiveListOfEventsFor)
+	s.Step(`^I receive no events at "([^"]*)"$`, test.iReceiveNoEventsAt)
 
 	notifyTest := new(notifyTest)
 	s.BeforeScenario(notifyTest.startConsuming)

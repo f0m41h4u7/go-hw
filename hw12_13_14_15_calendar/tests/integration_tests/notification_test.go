@@ -165,7 +165,7 @@ func (test *notifyTest) iReceiveNotification() error {
 }
 
 func (test *notifyTest) stopConsuming(*messages.Pickle, error) {
-	test.stopSignal <- struct{}{}
+	close(test.stopSignal)
 
 	err := test.ch.Close()
 	if err != nil {
