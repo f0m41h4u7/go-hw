@@ -1,4 +1,3 @@
-# file: features/api.feature
 # language: en-pirate
 
 Ahoy matey!: Calendar API
