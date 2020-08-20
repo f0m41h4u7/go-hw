@@ -26,6 +26,7 @@ func NewCalendar(st StorageInterface) Calendar {
 
 func (c *Calendar) CreateEvent(ev internal.Event) (uuid.UUID, error) {
 	fmt.Println("create")
+
 	return c.Storage.CreateEvent(ev)
 }
 

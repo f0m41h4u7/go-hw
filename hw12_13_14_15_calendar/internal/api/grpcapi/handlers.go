@@ -44,6 +44,7 @@ func convertInternal(ev in.Event) (*g.Event, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &g.Event{
 		Uuid:     ev.UUID,
 		Title:    ev.Title,
@@ -63,6 +64,7 @@ func (s *Server) Create(ctx context.Context, req *g.CreateRequest) (*g.CreateRes
 	if err != nil {
 		return nil, err
 	}
+
 	return &g.CreateResponse{
 		Uuid: id.String(),
 	}, nil
@@ -74,6 +76,7 @@ func (s *Server) Update(ctx context.Context, req *g.UpdateRequest) (*g.UpdateRes
 	if err != nil {
 		return nil, err
 	}
+
 	return &g.UpdateResponse{}, app.UpdateEvent(ev, uuid)
 }
 
@@ -82,6 +85,7 @@ func (s *Server) Delete(ctx context.Context, req *g.DeleteRequest) (*g.DeleteRes
 	if err != nil {
 		return nil, err
 	}
+
 	return &g.DeleteResponse{}, app.DeleteEvent(uuid)
 }
 
@@ -104,6 +108,7 @@ func (s *Server) GetForDay(ctx context.Context, req *g.GetRequest) (*g.GetRespon
 		}
 		res.Event = append(res.Event, tmp)
 	}
+
 	return &res, nil
 }
 
@@ -126,6 +131,7 @@ func (s *Server) GetForWeek(ctx context.Context, d *g.GetRequest) (*g.GetRespons
 		}
 		res.Event = append(res.Event, tmp)
 	}
+
 	return &res, nil
 }
 
@@ -148,5 +154,6 @@ func (s *Server) GetForMonth(ctx context.Context, d *g.GetRequest) (*g.GetRespon
 		}
 		res.Event = append(res.Event, tmp)
 	}
+
 	return &res, nil
 }

@@ -55,5 +55,6 @@ func InitCalendarConfig(cfgFile string) error {
 	if err := viper.Unmarshal(&Conf); err != nil {
 		return ErrCannotParseConfig
 	}
+
 	return Conf.validate()
 }

@@ -25,7 +25,6 @@ type Consumer struct {
 func NewConsumer() sender.ConsumerInterface {
 	return &Consumer{
 		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		queue:   "eventQueue",
 		done:    make(chan error),
 	}
 }
@@ -44,25 +43,50 @@ func (c *Consumer) Connect() error {
 
 	go func() {
 		log.Printf("closing: %s", <-c.conn.NotifyClose(make(chan *amqp.Error)))
-		c.done <- errors.New("channel Closed")
+		c.done <- errors.New("channel closed")
 	}()
+	log.Printf("connected to rabbit")
 
-	err = c.channel.QueueBind(
-		c.queue,
+	q, err := c.channel.QueueDeclare(
 		"",
-		"",
+		false,
+		false,
+		true,
 		false,
 		nil,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	c.queue = q.Name
+
+	if err = c.channel.ExchangeDeclare(
+		"event",
+		"fanout",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	); err != nil {
+		return err
+	}
+
+	return c.channel.QueueBind(
+		c.queue,
+		"",
+		"event",
+		false,
+		nil,
+	)
 }
 
 func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) {
 	be := backoff.NewExponentialBackOff()
-	be.MaxElapsedTime = time.Minute
+	be.MaxElapsedTime = 3 * time.Minute
 	be.InitialInterval = 1 * time.Second
 	be.Multiplier = 2
-	be.MaxInterval = 15 * time.Second
+	be.MaxInterval = 30 * time.Second
 
 	b := backoff.WithContext(be, ctx)
 	for {
@@ -77,6 +101,7 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 		case <-time.After(d):
 			if err := c.Connect(); err != nil {
 				log.Printf("could not connect in reconnect call: %+v", err)
+
 				continue
 			}
 			msgs, err := c.channel.Consume(
@@ -89,28 +114,18 @@ func (c *Consumer) Reconnect(ctx context.Context) (<-chan amqp.Delivery, error) 
 				nil,
 			)
 			if err != nil {
-				fmt.Printf("could not connect: %+v", err)
+				log.Printf("could not connect: %+v", err)
+
 				continue
 			}
+
 			return msgs, nil
 		}
 	}
 }
 
 func (c *Consumer) Receive(ctx context.Context, fn func(<-chan amqp.Delivery)) error {
-	var err error
-	if err = c.Connect(); err != nil {
-		return err
-	}
-	msgs, err := c.channel.Consume(
-		c.queue,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	msgs, err := c.Reconnect(ctx)
 	if err != nil {
 		return err
 	}
@@ -132,5 +147,6 @@ func (c *Consumer) Close() error {
 	if err != nil {
 		return err
 	}
+
 	return c.conn.Close()
 }

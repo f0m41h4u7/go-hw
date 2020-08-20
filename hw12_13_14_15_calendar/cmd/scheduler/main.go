@@ -29,9 +29,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
 	var st scheduler.Storage
 	if config.SchedConf.SQL {
-		st, err = db.NewSQLDatabase()
+		st, err = db.NewSQLDatabase(ctx, config.SchedConf.Database)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -53,9 +55,7 @@ func main() {
 	log.Printf("created scheduler")
 
 	sigs := make(chan os.Signal, 1)
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	ticker := time.NewTicker(time.Duration(config.SchedConf.Interval) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(config.SchedConf.Interval) * time.Second)
 	defer cancel()
 
 	go func() {
@@ -63,6 +63,7 @@ func main() {
 			select {
 			case <-sigs:
 				signal.Stop(sigs)
+
 				return
 			case <-ticker.C:
 				app.Scan()

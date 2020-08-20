@@ -11,6 +11,16 @@ run:
 	make build
 	./$(CALENDAR_CMD)
 
+up:
+	docker-compose -f ./deployments/docker-compose.yml up #--build -d
+
+down:
+	docker-compose -f ./deployments/docker-compose.yml down
+
+restart:
+	make down
+	make up
+
 test:
 	go test -v -count=1 -race -gcflags=-l -timeout=30s ./...
 
@@ -27,4 +37,20 @@ migrate:
 gen:
 	go generate ./...
 
-.PHONY: build run test lint clean migrate gen
+bdd:
+	set -e ;\
+	docker-compose -f ./tests/docker-compose-test.yml up --build -d ;\
+	test_status_code=0 ;\
+	docker-compose -f ./tests/docker-compose-test.yml run integration_tests go test || test_status_code=$$? ;\
+	docker-compose -f ./tests/docker-compose-test.yml down ;\
+	exit $$test_status_code ;\
+
+test-cleanup:
+	docker-compose down \
+		--rmi local \
+		--volumes \
+		--remove-orphans \
+		--timeout 60; \
+  	docker-compose rm -f
+
+.PHONY: build run test lint clean migrate gen up down restart bdd test-cleanup

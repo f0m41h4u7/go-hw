@@ -30,6 +30,7 @@ func (t *TestStorage) GetAllEvents() ([]in.Event, error) {
 
 func (t *TestStorage) GetEventByUUID(id uuid.UUID) (in.Event, error) {
 	TestEvent.UUID = id.String()
+
 	return TestEvent, t.Err
 }
 
@@ -37,6 +38,7 @@ func (t *TestStorage) GetFromInterval(st time.Time, del time.Duration) ([]in.Eve
 	evs := []in.Event{}
 	evs = append(evs, TestEvent)
 	evs = append(evs, TestEvent)
+
 	return evs, t.Err
 }
 

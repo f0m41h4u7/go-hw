@@ -2,12 +2,16 @@ package db
 
 //nolint:golint
 import (
+	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/araddon/dateparse"
+	"github.com/cenkalti/backoff/v3"
 	in "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal"
 	cl "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/app/calendar"
-	cfg "github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/f0m41h4u7/go-hw/hw12_13_14_15_calendar/internal/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -17,10 +21,41 @@ type SQLDb struct {
 	base *sqlx.DB
 }
 
-func NewSQLDatabase() (cl.StorageInterface, error) {
+func reconnect(ctx context.Context, cf config.DBConfiguration) (*sqlx.DB, error) {
+	be := backoff.NewExponentialBackOff()
+	be.MaxElapsedTime = time.Minute
+	be.InitialInterval = 1 * time.Second
+	be.Multiplier = 2
+	be.MaxInterval = 15 * time.Second
+
+	b := backoff.WithContext(be, ctx)
+	for {
+		d := b.NextBackOff()
+		if d == backoff.Stop {
+			return nil, fmt.Errorf("stop reconnecting")
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, nil
+		case <-time.After(d):
+			db, err := sqlx.Connect("mysql", cf.User+":"+cf.Password+"@("+cf.Host+":"+cf.Port+")/"+cf.Name+"?charset=utf8&parseTime=True&loc=Local")
+			if err != nil {
+				log.Printf("could not connect to db: %+v", err)
+
+				continue
+			}
+
+			return db, nil
+		}
+	}
+}
+
+func NewSQLDatabase(ctx context.Context, cf config.DBConfiguration) (cl.StorageInterface, error) {
 	var err error
 	var DB SQLDb
-	DB.base, err = sqlx.Connect("mysql", cfg.Conf.Database.User+":"+cfg.Conf.Database.Password+"@("+cfg.Conf.Database.Host+":"+cfg.Conf.Database.Port+")/"+cfg.Conf.Database.Name+"?charset=utf8&parseTime=True&loc=Local")
+	DB.base, err = reconnect(ctx, cf)
+
 	return &DB, err
 }
 
@@ -59,6 +94,7 @@ func (db *SQLDb) validateTime(start time.Time, end time.Time, uuidExcept string)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -77,18 +113,21 @@ func (db *SQLDb) CreateEvent(ev in.Event) (uuid.UUID, error) {
 	}
 	ev.UUID = id.String()
 	_, err = db.base.Exec(`INSERT INTO events (uuid, title, start, end, description, ownerid, notifyin) VALUES (?, ?, ?, ?, ?, ?, ?)`, id.String(), ev.Title, ev.Start, ev.End, ev.Description, ev.OwnerID, ev.NotifyIn)
+
 	return id, err
 }
 
 func (db *SQLDb) GetAllEvents() ([]in.Event, error) {
 	evs := []in.Event{}
 	err := db.base.Select(&evs, "SELECT * FROM events")
+
 	return evs, err
 }
 
 func (db *SQLDb) GetEventByUUID(id uuid.UUID) (in.Event, error) {
 	ev := in.Event{}
 	err := db.base.Get(&ev, "SELECT * FROM events WHERE uuid = ?", id.String())
+
 	return ev, err
 }
 
@@ -115,6 +154,7 @@ func (db *SQLDb) GetFromInterval(start time.Time, delta time.Duration) ([]in.Eve
 	if len(res) != 0 {
 		return res, nil
 	}
+
 	return nil, ErrEventNotFound
 }
 
@@ -135,6 +175,7 @@ func (db *SQLDb) UpdateEvent(ev in.Event, id uuid.UUID) error {
 	}
 	ev.UUID = id.String()
 	_, err = db.base.NamedExec(`UPDATE events SET title=:title, start=:start, end=:end, description=:description, ownerid=:ownerid, notifyin=:notifyin WHERE :uuid = :uuid`, ev)
+
 	return err
 }
 
@@ -143,6 +184,7 @@ func (db *SQLDb) DeleteEvent(id uuid.UUID) error {
 		return ErrEventNotFound
 	}
 	_, err := db.base.Exec("DELETE FROM events WHERE uuid = ?", id)
+
 	return err
 }
 

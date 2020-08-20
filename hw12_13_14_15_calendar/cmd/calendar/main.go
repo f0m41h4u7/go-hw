@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -28,7 +29,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
 	err := config.InitCalendarConfig(cfgFile)
 	if err != nil {
 		log.Fatal(err)
@@ -38,17 +38,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
 	var st calendar.StorageInterface
 	if config.Conf.SQL {
-		st, err = db.NewSQLDatabase()
+		st, err = db.NewSQLDatabase(ctx, config.Conf.Database)
 		if err != nil {
 			zap.L().Error("cannot init sql database", zap.Error(err))
+
 			return
 		}
 	} else {
 		st, err = db.NewInMemDatabase()
 		if err != nil {
 			zap.L().Error("cannot init inmemory database", zap.Error(err))
+
 			return
 		}
 	}
@@ -61,6 +64,7 @@ func main() {
 	defer func() {
 		if err := http.Stop(); err != nil {
 			zap.L().Error("http server stop with error", zap.Error(err))
+
 			return
 		}
 	}()
@@ -75,11 +79,13 @@ func main() {
 	select {
 	case <-sigs:
 		signal.Stop(sigs)
+
 		return
 	case err = <-errs:
 		if err != nil {
 			zap.L().Error("server exited with error", zap.Error(err))
 		}
+
 		return
 	}
 }

@@ -39,6 +39,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+	log.Println("created sender")
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	errs := make(chan error, 1)
@@ -54,6 +55,7 @@ func main() {
 	case <-sigs:
 		signal.Stop(sigs)
 		cancel()
+
 		return
 	case err = <-errs:
 		cancel()

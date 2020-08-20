@@ -18,14 +18,12 @@ type Publisher struct {
 	address string
 	conn    *amqp.Connection
 	channel *amqp.Channel
-	queue   string
 	done    chan error
 }
 
 func NewPublisher() scheduler.PublisherInterface {
 	return &Publisher{
-		address: "amqp://" + net.JoinHostPort(config.SendConf.Rabbit.Host, config.SendConf.Rabbit.Port),
-		queue:   "eventQueue",
+		address: "amqp://" + net.JoinHostPort(config.SchedConf.Rabbit.Host, config.SchedConf.Rabbit.Port),
 		done:    make(chan error),
 	}
 }
@@ -48,12 +46,13 @@ func (p *Publisher) Send(data []byte) error {
 		select {
 		case <-time.After(d):
 			if err := p.Connect(); err != nil {
-				log.Printf("could not connect in reconnect call: %+v", err)
+				log.Printf("could not reconnect: %+v", err)
+
 				continue
 			}
 			err := p.channel.Publish(
+				"event",
 				"",
-				p.queue,
 				false,
 				false,
 				amqp.Publishing{
@@ -63,9 +62,11 @@ func (p *Publisher) Send(data []byte) error {
 				})
 			if err != nil {
 				fmt.Printf("failed to send data: %+v", err)
+
 				continue
 			}
 			log.Printf(" [x] Sent %s", data)
+
 			return nil
 		}
 	}
@@ -87,17 +88,16 @@ func (p *Publisher) Connect() error {
 		log.Printf("closing: %s", <-p.conn.NotifyClose(make(chan *amqp.Error)))
 		p.done <- errors.New("channel closed")
 	}()
-	err = p.channel.QueueBind(
-		p.queue,
-		"",
-		"",
+
+	return p.channel.ExchangeDeclare(
+		"event",
+		"fanout",
+		true,
+		false,
+		false,
 		false,
 		nil,
 	)
-	return err
-}
-
-func (p *Publisher) Reconnect() {
 }
 
 func (p *Publisher) Close() error {
@@ -105,5 +105,6 @@ func (p *Publisher) Close() error {
 	if err != nil {
 		return err
 	}
+
 	return p.conn.Close()
 }
